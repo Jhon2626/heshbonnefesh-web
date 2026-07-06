@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heshbon Nefesh — Le compte de l'âme, chaque jour</title>
+  <meta name="description" content="Heshbon Nefesh est un compagnon d'introspection juive : des pratiques quotidiennes à votre mesure, des bilans guidés fidèles à la tradition, et le calendrier juif intégré. Disponible sur iOS et Android.">
+  <meta property="og:title" content="Heshbon Nefesh — Le compte de l'âme, chaque jour">
+  <meta property="og:description" content="Un compagnon d'introspection juive : pratiques quotidiennes, bilans guidés, calendrier juif intégré.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/dawn-wide.jpg">
+  <meta name="theme-color" content="#FAF7F0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://tqrjwvgrdomfvgtgqgrd.supabase.co; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; base-uri 'self'; form-action 'self'">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+</head>
+<body>
+
+  <header class="nav" id="nav">
+    <a class="nav-brand" href="#haut" aria-label="Heshbon Nefesh">
+      <img src="assets/emblem.png" alt="" width="34" height="34" class="nav-emblem">
+      <span class="nav-wordmark">Heshbon&nbsp;Nefesh</span>
+    </a>
+    <nav class="nav-links" aria-label="Navigation principale">
+      <a href="#demarche" data-i18n="nav.demarche">La démarche</a>
+      <a href="#application" data-i18n="nav.app">L'application</a>
+      <a href="#video" data-i18n="nav.video">La vidéo</a>
+      <a href="#contact" data-i18n="nav.contact">Contact</a>
+    </nav>
+    <div class="nav-langs" role="group" aria-label="Langue">
+      <button type="button" data-lang="fr" lang="fr">FR</button>
+      <button type="button" data-lang="en" lang="en">EN</button>
+      <button type="button" data-lang="he" lang="he">עב</button>
+    </div>
+  </header>
+
+  <main id="haut">
+
+    <!-- ═══════════ HÉROS — L'AUBE ═══════════ -->
+    <section class="hero" aria-label="Présentation">
+      <div class="hero-bg" id="heroBg">
+        <picture>
+          <source media="(max-width: 700px)" srcset="assets/dawn-tall.jpg">
+          <img src="assets/dawn-wide.jpg" alt="" fetchpriority="high">
+        </picture>
+      </div>
+      <div class="hero-melt" aria-hidden="true"></div>
+      <canvas class="hero-dust" id="dust" aria-hidden="true"></canvas>
+
+      <div class="hero-inner">
+        <p class="hero-hebrew" id="heroKicker" lang="he" dir="rtl">חשבון הנפש</p>
+        <h1 class="hero-title" data-i18n-html="hero.title">Le compte de l'âme,<br>chaque jour.</h1>
+        <p class="hero-sub" data-i18n="hero.sub">Heshbon Nefesh est un compagnon d'introspection juive&nbsp;:
+        des pratiques quotidiennes à votre mesure, des bilans guidés fidèles à la tradition,
+        et le calendrier juif qui rythme vos journées.</p>
+
+        <div class="hero-actions" id="stores">
+          <a class="store-btn" href="https://apps.apple.com/app/id0000000000" rel="noopener">
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08ZM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25Z"/></svg>
+            <span><small data-i18n="store.ios.small">Télécharger dans l'</small><strong>App&nbsp;Store</strong></span>
+          </a>
+          <a class="store-btn" href="https://play.google.com/store/apps/details?id=com.heshbonnefesh.app" rel="noopener">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3.6 2.4 13.8 12 3.6 21.6c-.37-.19-.6-.57-.6-1.05V3.45c0-.48.23-.86.6-1.05Zm11.63 8.17L5.9 1.8l11.06 6.36-1.73 2.41Zm2.9-1.67 2.62 1.51c.83.48.83 1.7 0 2.18l-2.63 1.51-1.95-2.6 1.96-2.6ZM5.9 22.2l9.33-8.77 1.73 2.41L5.9 22.2Z"/></svg>
+            <span><small data-i18n="store.android.small">Disponible sur</small><strong>Google&nbsp;Play</strong></span>
+          </a>
+        </div>
+        <p class="hero-avail" data-i18n="hero.avail">Disponible sur iOS et Android</p>
+      </div>
+
+      <a class="hero-scroll" href="#demarche" aria-label="Découvrir la suite">
+        <span data-i18n="hero.scroll">découvrir</span>
+        <span class="hero-scroll-line" aria-hidden="true"></span>
+      </a>
+    </section>
+
+    <!-- ═══════════ LA DÉMARCHE ═══════════ -->
+    <section class="dem" id="demarche" aria-labelledby="demarche-titre">
+      <div class="dem-inner">
+        <h2 id="demarche-titre" class="rv" data-i18n-html="dem.title">Une pratique millénaire,<br>un geste quotidien</h2>
+        <p class="dem-lead rv" data-i18n-html="dem.lead">Le <em>heshbon nefesh</em> — littéralement «&nbsp;le compte de l'âme&nbsp;» —
+        est la tradition juive de l'examen de conscience&nbsp;: prendre un moment, chaque jour,
+        pour regarder honnêtement où l'on en est, et choisir un pas de plus.
+        Ni culpabilité, ni performance&nbsp;: une croissance douce et régulière.</p>
+
+        <figure class="dem-banner rv">
+          <img src="assets/banner-etude.jpg" alt="Un livre ouvert sous une lampe de laiton, dans la lumière du matin" loading="lazy">
+        </figure>
+
+        <ol class="steps">
+          <li class="rv">
+            <span class="step-n" aria-hidden="true">א</span>
+            <div><h3 data-i18n="dem.s1.t">Pratiquer</h3>
+            <p data-i18n="dem.s1.p">Choisissez des actions concrètes dans dix univers de pratique — étude, prière,
+            relations, Shabbat… — adaptées à votre niveau et à votre profil.</p></div>
+          </li>
+          <li class="rv">
+            <span class="step-n" aria-hidden="true">ב</span>
+            <div><h3 data-i18n="dem.s2.t">S'évaluer</h3>
+            <p data-i18n="dem.s2.p">Le soir venu, un court questionnaire d'introspection vous aide à faire le point,
+            avec bienveillance, sur la journée écoulée.</p></div>
+          </li>
+          <li class="rv">
+            <span class="step-n" aria-hidden="true">ג</span>
+            <div><h3 data-i18n="dem.s3.t">Progresser</h3>
+            <p data-i18n="dem.s3.p">Vos bilans personnalisés éclairent votre cheminement&nbsp;; niveau après niveau,
+            l'arbre de votre pratique grandit.</p></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ═══════════ L'APPLICATION ═══════════ -->
+    <section class="app" id="application" aria-labelledby="app-titre">
+      <header class="app-head">
+        <h2 id="app-titre" class="rv" data-i18n="app.title">Dans l'application</h2>
+        <p class="rv" data-i18n="app.sub">Un sanctuaire de poche&nbsp;: la nuit pour les grands moments, l'aube pour le quotidien.</p>
+      </header>
+
+      <div class="app-grid">
+        <!-- Mockup téléphone 3D -->
+        <div class="phone-stage" id="phoneStage" aria-hidden="true">
+          <div class="phone" id="phone">
+            <div class="phone-screen">
+              <div class="ps-sky">
+                <span class="ps-star s1"></span><span class="ps-star s2"></span><span class="ps-star s3"></span>
+                <span class="ps-star s4"></span><span class="ps-star s5"></span>
+                <p class="ps-greet" data-i18n="phone.greet">Bonsoir, Sarah</p>
+                <p class="ps-date" data-i18n="phone.date">Mardi 12 Tichri · 20 h 14</p>
+              </div>
+              <div class="ps-panel">
+                <div class="ps-ring-row">
+                  <svg class="ps-ring" viewBox="0 0 120 120">
+                    <circle class="ps-ring-track" cx="60" cy="60" r="52"/>
+                    <circle class="ps-ring-fill" id="ringFill" cx="60" cy="60" r="52"/>
+                  </svg>
+                  <div class="ps-ring-center">
+                    <strong id="ringPct">0%</strong>
+                    <span data-i18n="phone.today">aujourd'hui</span>
+                  </div>
+                </div>
+                <div class="ps-stats">
+                  <span><span data-i18n="phone.streak">Série</span> <strong data-i18n="phone.streakv">12&nbsp;j</strong></span>
+                  <span class="ps-sep"></span>
+                  <span><svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path fill="#C9A84C" d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8L2.2 9.1l6.9-.8Z"/></svg> <strong>4,2</strong></span>
+                  <span class="ps-sep"></span>
+                  <span><span data-i18n="phone.level">Niveau</span> <strong>5</strong></span>
+                </div>
+                <div class="ps-task done">
+                  <span class="ps-check on"><svg viewBox="0 0 24 24" width="12" height="12"><path fill="none" stroke="#1A2744" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+                  <div><strong data-i18n="phone.t1">Étude du matin</strong><em data-i18n="phone.t1m">10 minutes · Étude</em></div>
+                </div>
+                <div class="ps-task">
+                  <span class="ps-check"></span>
+                  <div><strong data-i18n="phone.t2">Appeler mes parents</strong><em data-i18n="phone.t2m">Relations &amp; hessed</em></div>
+                </div>
+                <div class="ps-tabbar">
+                  <span class="on"></span><span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="phone-halo" aria-hidden="true"></div>
+        </div>
+
+        <!-- Fonctionnalités -->
+        <div class="features">
+          <article class="feature rv">
+            <figure><img src="assets/banner-vie-quotidienne.jpg" alt="Intérieur de pierre baigné de lumière dorée du matin" loading="lazy"></figure>
+            <h3 data-i18n="f1.t">Des pratiques à votre mesure</h3>
+            <p data-i18n="f1.p">Un catalogue d'actions concrètes, classées par univers et par niveau
+            — de l'essentiel au plus complet. Cochez, gardez la série, sentez la journée se remplir.</p>
+          </article>
+
+          <article class="feature rv">
+            <div class="rav-bubble">
+              <img class="rav-face" src="assets/rav.jpg" alt="Portrait illustré du rav, sage chaleureux au châle de prière" loading="lazy">
+              <blockquote>
+                <p data-i18n="f2.quote">«&nbsp;Regarde le chemin parcouru cette semaine&nbsp;: ta constance dans l'étude
+                porte déjà ses fruits. Et si nous regardions ensemble la patience&nbsp;?&nbsp;»</p>
+                <cite data-i18n="f2.cite">Le rav — votre guide dans l'app</cite>
+              </blockquote>
+            </div>
+            <h3 data-i18n="f2.t">Des bilans guidés, fidèles à la tradition</h3>
+            <p data-i18n="f2.p">Un questionnaire d'introspection, puis un bilan personnalisé généré par IA
+            dans l'esprit du heshbon nefesh — relu à la lumière de vos ressentis, jamais culpabilisant.</p>
+          </article>
+
+          <article class="feature rv">
+            <figure><img src="assets/banner-shabbat.jpg" alt="Table de Shabbat aux bougies allumées devant la ville de pierre" loading="lazy"></figure>
+            <h3 data-i18n="f3.t">Le temps juif, intégré</h3>
+            <p data-i18n="f3.p">Zmanim du jour, fêtes, Roch Hodesh, parashiot&nbsp;: le calendrier hébraïque
+            structure l'application — jusqu'au mode Shabbat qui met l'écran en repos.</p>
+          </article>
+
+          <article class="feature rv">
+            <figure class="levels" dir="ltr">
+              <img src="assets/level-01.jpg" alt="Emblème du niveau 1 : jeune pousse dorée" loading="lazy">
+              <svg class="levels-arrow" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m-6-6 6 6-6 6"/></svg>
+              <img src="assets/level-05.jpg" alt="Emblème du niveau 5 : arbre en croissance" loading="lazy">
+              <svg class="levels-arrow" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m-6-6 6 6-6 6"/></svg>
+              <img src="assets/level-10.jpg" alt="Emblème du niveau 10 : arbre majestueux en pleine lumière" loading="lazy">
+            </figure>
+            <h3 data-i18n="f4.t">Une progression qui élève</h3>
+            <p data-i18n="f4.p">Chaque pratique nourrit votre niveau&nbsp;; l'arbre grandit avec vous.
+            Les passages de niveau sont célébrés comme ils le méritent — brièvement, dignement.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ LES UNIVERS ═══════════ -->
+    <section class="universes" aria-labelledby="univers-titre">
+      <h2 id="univers-titre" class="rv" data-i18n="uni.title">Dix univers de pratique</h2>
+      <p class="universes-sub rv" data-i18n="uni.sub">Chacun avec son monde illustré, ses actions et ses niveaux.</p>
+      <div class="marquee" dir="ltr">
+        <ul class="marquee-track">
+          <li><img src="assets/cat-etude.jpg" alt="" loading="lazy"><span data-i18n="uni.etude">Étude</span></li>
+          <li><img src="assets/cat-shabbat.jpg" alt="" loading="lazy"><span data-i18n="uni.shabbat">Shabbat</span></li>
+          <li><img src="assets/cat-fetes.jpg" alt="" loading="lazy"><span data-i18n="uni.fetes">Fêtes</span></li>
+          <li><img src="assets/cat-vie-quotidienne.jpg" alt="" loading="lazy"><span data-i18n="uni.vie">Vie quotidienne</span></li>
+          <li><img src="assets/cat-relations-hessed.jpg" alt="" loading="lazy"><span data-i18n="uni.relations">Relations &amp; hessed</span></li>
+          <li><img src="assets/cat-midot-emouna.jpg" alt="" loading="lazy"><span data-i18n="uni.midot">Midot &amp; émouna</span></li>
+          <li><img src="assets/cat-shalom-bayit.jpg" alt="" loading="lazy"><span data-i18n="uni.shalom">Shalom bayit</span></li>
+          <li><img src="assets/cat-mitsvot-femme.jpg" alt="" loading="lazy"><span data-i18n="uni.mitsvot">Mitsvot de la femme</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ═══════════ LA VIDÉO ═══════════ -->
+    <section class="video" id="video" aria-labelledby="video-titre">
+      <h2 id="video-titre" class="rv" data-i18n="video.title">Découvrez Heshbon Nefesh</h2>
+      <p class="video-sub rv" data-i18n="video.sub">Deux minutes en images — le rythme, la lumière et l'esprit de l'application.</p>
+      <div class="video-frame rv" id="videoFrame">
+        <img src="assets/banner-fetes.jpg" alt="" loading="lazy" class="video-poster">
+        <button class="video-play" id="videoPlay" type="button" data-i18n-attr="aria-label:video.play" aria-label="Lire la vidéo de présentation">
+          <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.54.84l10-6.5a1 1 0 0 0 0-1.68l-10-6.5A1 1 0 0 0 8 5.5Z"/></svg>
+        </button>
+        <p class="video-note" id="videoNote" hidden data-i18n="video.note">La vidéo arrive très bientôt.</p>
+      </div>
+    </section>
+
+    <!-- ═══════════ CONTACT ═══════════ -->
+    <section class="contact" id="contact" aria-labelledby="contact-titre">
+      <div class="contact-grid">
+        <div class="contact-copy">
+          <h2 id="contact-titre" class="rv" data-i18n="c.title">Écrivez-nous</h2>
+          <p class="rv" data-i18n="c.p">Une question, une idée, ou l'envie de nous dire bonjour&nbsp;?
+          Laissez-nous un mot — nous lisons chaque message et nous répondons.</p>
+        </div>
+
+        <form class="contact-form rv" id="contactForm" novalidate>
+          <div class="ff">
+            <label for="f-name" data-i18n="form.name">Votre nom</label>
+            <input id="f-name" name="name" type="text" autocomplete="name" maxlength="100" required>
+          </div>
+          <div class="ff">
+            <label for="f-email" data-i18n="form.email">Votre courriel</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" maxlength="200" required>
+          </div>
+          <div class="ff">
+            <label for="f-subject" data-i18n="form.subject">Sujet</label>
+            <select id="f-subject" name="subject">
+              <option value="question" data-i18n="form.s.question">Poser une question</option>
+              <option value="lancement" data-i18n="form.s.news">Recevoir les nouveautés</option>
+              <option value="autre" data-i18n="form.s.other">Autre</option>
+            </select>
+          </div>
+          <div class="ff">
+            <label for="f-message" data-i18n="form.message">Votre message</label>
+            <textarea id="f-message" name="message" rows="5" maxlength="3000" minlength="10" required></textarea>
+          </div>
+          <!-- Champ-piège anti-robots : ne pas remplir -->
+          <div class="ff-hp" aria-hidden="true">
+            <label for="f-website">Site web</label>
+            <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
+          <button class="btn btn-gold" type="submit" id="formSubmit" data-i18n="form.send">Envoyer le message</button>
+          <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+          <p class="form-privacy"><span data-i18n="form.privacy">Vos données ne servent qu'à vous répondre —</span>
+          <a href="fr/privacy.html" id="privacyLink" data-i18n="form.privacyLink">politique de confidentialité</a>.</p>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <img src="assets/emblem.png" alt="" width="44" height="44" class="footer-emblem">
+    <p class="footer-name">Heshbon Nefesh</p>
+    <nav class="footer-links" aria-label="Pages légales">
+      <a href="fr/privacy.html" id="footPrivacy" data-i18n="foot.privacy">Confidentialité</a>
+      <a href="fr/terms.html" id="footTerms" data-i18n="foot.terms">Conditions d'utilisation</a>
+    </nav>
+    <p class="footer-copy">© 2026 Heshbon Nefesh</p>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

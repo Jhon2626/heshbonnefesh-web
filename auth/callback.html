@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>HeshbonNefesh — Confirmation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1A2744;
+      background: linear-gradient(180deg, #10162E 0%, #1A2744 60%, #2A2F6E 100%);
+      font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+      color: #F7F3E8;
+      padding: 24px;
+      text-align: center;
+    }
+    .card { max-width: 420px; width: 100%; }
+    .emblem {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(201,168,76,0.14);
+      border: 1.5px solid rgba(201,168,76,0.5);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; font-size: 32px;
+    }
+    h1 { font-size: 26px; font-weight: 700; margin-bottom: 10px; }
+    p  { font-size: 15px; line-height: 1.55; color: rgba(247,243,232,0.8); margin-bottom: 8px; }
+    .btn {
+      display: inline-block; margin-top: 22px;
+      background: #C9A84C; color: #1A2744;
+      font-size: 16px; font-weight: 700; text-decoration: none;
+      padding: 15px 36px; border-radius: 14px;
+    }
+    .hint { font-size: 12px; color: rgba(247,243,232,0.55); margin-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="emblem">🕯️</div>
+    <h1 id="title">Adresse confirmée !</h1>
+    <p id="msg">Ton compte HeshbonNefesh est validé.<br/>Ouvre l'application pour continuer.</p>
+    <a class="btn" id="openBtn" href="#">Ouvrir HeshbonNefesh</a>
+    <p class="hint">Si l'application ne s'ouvre pas, lance-la manuellement puis connecte-toi.</p>
+  </div>
+  <script>
+    (function () {
+      // Relaie le fragment (#access_token=…) tel quel vers l'app — flux implicite Supabase.
+      var hash = window.location.hash || '';
+      var deepLink = 'heshbonnefesh://auth/callback' + hash;
+      document.getElementById('openBtn').setAttribute('href', deepLink);
+
+      // Lien en erreur (expiré/déjà utilisé) → message adapté, l'app affichera le détail.
+      if (hash.indexOf('error') !== -1) {
+        document.getElementById('title').textContent = 'Lien expiré ou déjà utilisé';
+        document.getElementById('msg').innerHTML = "Ouvre l'application et connecte-toi — si besoin, redemande un e-mail de confirmation.";
+      }
+
+      // Tentative d'ouverture automatique (les navigateurs in-app peuvent la bloquer :
+      // le bouton reste le chemin garanti, car déclenché par un geste utilisateur).
+      setTimeout(function () { window.location.href = deepLink; }, 350);
+    })();
+  </script>
+</body>
+</html>
