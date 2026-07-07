@@ -1,0 +1,2639 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <title>Heshbon Nefesh — Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080C14; --surface: #0F1520; --surface2: #141B27; --surface3: #1A2235;
+      --border: #1E2A3E; --border2: #243045;
+      --gold: #C9A84C; --gold2: #E8C46A; --gold-dim: rgba(201,168,76,0.12);
+      --blue: #3B82F6; --green: #10B981; --red: #EF4444; --purple: #8B5CF6;
+      --text: #E2E8F0; --text2: #94A3B8; --text3: #4A5568;
+      --radius: 10px; --radius-lg: 14px; --radius-xl: 18px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+    /* ── Inputs ── */
+    .inp { background: var(--bg); border: 1.5px solid var(--border); color: var(--text); border-radius: var(--radius); padding: 9px 13px; width: 100%; font-family: 'Inter', sans-serif; font-size: 13.5px; outline: none; transition: border-color .15s, box-shadow .15s; }
+    .inp:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.1); }
+    .inp::placeholder { color: var(--text3); }
+    textarea.inp { resize: vertical; line-height: 1.6; }
+    select.inp { cursor: pointer; }
+
+    /* ── Buttons ── */
+    .btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: var(--radius); padding: 8px 16px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; transition: all .15s; white-space: nowrap; }
+    .btn-gold { background: var(--gold); color: #0A0C10; }
+    .btn-gold:hover { background: var(--gold2); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(201,168,76,0.3); }
+    .btn-ghost { background: transparent; color: var(--text2); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-blue { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+    .btn-blue:hover { background: rgba(59,130,246,0.2); }
+    .btn-red { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+    .btn-red:hover { background: rgba(239,68,68,0.18); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 7px; }
+    .btn-xs { padding: 3px 8px; font-size: 11px; border-radius: 6px; }
+    .btn-icon { width: 32px; height: 32px; padding: 0; justify-content: center; border-radius: 8px; }
+
+    /* ── Cards ── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+    .card2 { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); }
+    .card3 { background: var(--surface3); border: 1px solid var(--border2); border-radius: var(--radius); }
+
+    /* ── Badges / pastilles (composant générique, partagé) ── */
+    .badge { display: inline-flex; align-items: center; gap: 3px; border-radius: 99px; padding: 2px 9px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .b-gold { background: rgba(201,168,76,0.12); color: var(--gold); border: 1px solid rgba(201,168,76,0.25); }
+    .b-blue { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+    .b-green { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+    .b-red { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+    .b-gray { background: rgba(148,163,184,0.08); color: var(--text2); border: 1px solid rgba(148,163,184,0.15); }
+    .b-purple { background: rgba(139,92,246,0.12); color: var(--purple); border: 1px solid rgba(139,92,246,0.25); }
+
+    /* ── Sidebar ── */
+    #sidebar { width: 220px; min-height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text2); transition: all .15s; margin: 1px 8px; }
+    .nav-item:hover { background: var(--gold-dim); color: var(--text); }
+    .nav-item.active { background: var(--gold-dim); color: var(--gold); font-weight: 600; }
+    .nav-item.active svg { color: var(--gold); }
+    .nav-section { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text3); padding: 16px 22px 6px; }
+
+    /* ── Toggle ── */
+    .toggle { position: relative; width: 38px; height: 20px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .tslider { position: absolute; inset: 0; background: var(--border2); border-radius: 99px; cursor: pointer; transition: .2s; }
+    .tslider:before { content: ''; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: var(--text3); border-radius: 50%; transition: .2s; }
+    .toggle input:checked + .tslider { background: rgba(201,168,76,0.35); }
+    .toggle input:checked + .tslider:before { transform: translateX(18px); background: var(--gold); }
+
+    /* ── Tabs ── */
+    .tab-bar { display: flex; gap: 2px; padding: 4px; background: var(--bg); border-radius: 10px; border: 1px solid var(--border); }
+    .tab { padding: 6px 13px; border-radius: 7px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: var(--text2); transition: all .15s; white-space: nowrap; }
+    .tab.active { background: var(--surface3); color: var(--gold); font-weight: 600; }
+    .tab:hover:not(.active) { color: var(--text); }
+
+    /* ── Modal ── */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-xl); width: 100%; max-width: 760px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.6); }
+    /* Mode « passe-plat » : le contenu (carte autoportée des modals détail user / RGPD) devient enfant direct de #overlay, sans double cadre. Garde le nœud #modal vivant. */
+    .modal-plain { display: contents; }
+
+    /* ── Table ── */
+    .trow { border-bottom: 1px solid var(--surface2); transition: background .1s; }
+    .trow:hover { background: rgba(201,168,76,0.025); }
+    .th { text-align: left; padding: 10px 16px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); }
+    .td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
+
+    /* ── Loader & Toast ── */
+    .loader { border: 2px solid var(--border2); border-top: 2px solid var(--gold); border-radius: 50%; width: 18px; height: 18px; animation: spin .7s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 18px; border-radius: 10px; font-size: 13px; z-index: 300; transform: translateY(80px); opacity: 0; transition: all .25s; display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border2); min-width: 200px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.ok { border-color: rgba(16,185,129,0.4); color: var(--green); }
+    #toast.err { border-color: rgba(239,68,68,0.4); color: var(--red); }
+
+    /* ── Cat cards ── */
+    .cat-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-xl); padding: 20px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
+    .cat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); border-color: rgba(201,168,76,0.3); }
+    .cat-card .arr { opacity: 0; transform: translateX(-4px); transition: all .2s; }
+    .cat-card:hover .arr { opacity: 1; transform: translateX(0); }
+    .cat-add { border: 1.5px dashed var(--border2); background: transparent; }
+    .cat-add:hover { border-color: var(--gold); background: var(--gold-dim); }
+
+    /* ── Breadcrumb ── */
+    .bc { font-size: 13px; }
+    .bc-link { color: var(--text2); cursor: pointer; transition: color .15s; }
+    .bc-link:hover { color: var(--gold); }
+    .bc-cur { color: var(--text); font-weight: 600; }
+    .bc-sep { color: var(--border2); margin: 0 6px; font-size: 16px; }
+
+    /* ── Action item ── */
+    .action-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; transition: all .15s; }
+    .action-item:hover { border-color: rgba(201,168,76,0.2); }
+    /* ── Templates accordion ── */
+    .tpl-group { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 8px; }
+    .tpl-group > summary { list-style: none; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; padding: 12px 14px; font-size: 12px; font-weight: 700; color: var(--text2); }
+    .tpl-group > summary::-webkit-details-marker { display: none; }
+    .tpl-group > summary:hover { color: var(--text); }
+    .tpl-group .tpl-caret { transition: transform .15s; opacity: .6; }
+    .tpl-group[open] > summary .tpl-caret { transform: rotate(90deg); }
+    .tpl-group__body { padding: 0 14px 14px; }
+
+    /* ── Field label ── */
+    .fl { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
+
+    /* ── Stat card ── */
+    .stat { background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; position: relative; overflow: hidden; }
+    .stat::before { content: ''; position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; border-radius: 50%; opacity: 0.06; }
+
+    /* ── Glow dot ── */
+    .gdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Section in modal ── */
+    .msec { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+
+    /* ── Info box ── */
+    .info-box { background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.18); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--gold); display: flex; align-items: flex-start; gap: 8px; }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE — mobile ≤768px / tablette
+       ══════════════════════════════════════════ */
+
+    /* ── Hamburger button ── */
+    #hamburger {
+      display: none;
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 400;
+      width: 38px;
+      height: 38px;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--text);
+      transition: background .15s, color .15s;
+      flex-shrink: 0;
+    }
+    #hamburger:hover { background: var(--gold-dim); color: var(--gold); }
+
+    /* ── Backdrop semi-transparent derrière le drawer ── */
+    #sidebarBackdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 299;
+    }
+    #sidebarBackdrop.open { display: block; }
+
+    @media (max-width: 768px) {
+      /* Hamburger visible */
+      #hamburger { display: flex; }
+
+      /* Sidebar : drawer off-canvas */
+      #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 300;
+        transform: translateX(-100%);
+        transition: transform .25s ease;
+      }
+      #sidebar.open { transform: translateX(0); }
+
+      /* Tables : scroll horizontal */
+      #main table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Grilles inline fixes → 1 colonne */
+      #main [style*="grid-template-columns:repeat(4,1fr)"],
+      #main [style*="grid-template-columns:repeat(3,1fr)"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Grille 2 col dashboard → 1 colonne */
+      #main [style*="grid-template-columns:1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Modals pleine largeur */
+      .overlay { padding: 8px; }
+      .modal { max-width: 100% !important; max-height: 94vh; }
+
+      /* Padding réduit dans les pages */
+      #main > div[style*="padding:32px"] {
+        padding: 16px !important;
+      }
+    }
+
+    @media (min-width: 769px) {
+      /* Desktop : hamburger caché */
+      #hamburger { display: none !important; }
+      #sidebarBackdrop { display: none !important; }
+      /* Sidebar statique */
+      #sidebar {
+        position: static;
+        transform: none !important;
+        height: auto;
+        min-height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="width:100%;max-width:380px;">
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="width:64px;height:64px;border-radius:20px;background:var(--gold-dim);border:1.5px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;">✡️</div>
+      <h1 style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-0.3px;">Heshbon Nefesh</h1>
+      <p style="font-size:11px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;">Panel Administrateur</p>
+    </div>
+    <!-- Card -->
+    <div class="card" style="padding:28px;">
+      <div id="loginErr" style="display:none;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:16px;"></div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label class="fl">Email</label>
+          <input id="lEmail" type="email" class="inp" placeholder="admin@heshbon.com"/>
+        </div>
+        <div>
+          <label class="fl">Mot de passe</label>
+          <input id="lPwd" type="password" class="inp" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"/>
+        </div>
+        <button onclick="login()" class="btn btn-gold" id="lBtn" style="justify-content:center;padding:11px;margin-top:4px;font-size:14px;">
+          Se connecter
+        </button>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:11px;color:var(--text3);margin-top:16px;">Accès restreint aux administrateurs</p>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="appScreen" style="display:none;min-height:100vh;">
+
+  <!-- HAMBURGER (mobile uniquement — caché sur desktop via CSS) -->
+  <button id="hamburger" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+
+  <!-- BACKDROP (ferme le drawer au tap extérieur) -->
+  <div id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <!-- Logo -->
+    <div style="padding:20px 16px 16px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--gold-dim);border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">✡️</div>
+        <div>
+          <p style="font-size:13px;font-weight:700;color:var(--text);">Heshbon Nefesh</p>
+          <p style="font-size:10px;color:var(--text3);letter-spacing:0.5px;">Admin Panel</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav style="flex:1;padding:8px 0;overflow-y:auto;">
+      <div class="nav-section">Vue d'ensemble</div>
+      <div onclick="go('dash')" class="nav-item" id="n-dash">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+
+      <div class="nav-section">Catalogue</div>
+      <div onclick="go('cat')" class="nav-item" id="n-cat">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Catalogue
+      </div>
+
+      <div class="nav-section">Engagement</div>
+      <div onclick="go('defis')" class="nav-item" id="n-defis">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Défis & Scénarios
+      </div>
+
+      <div class="nav-section">Utilisateurs</div>
+      <div onclick="go('users')" class="nav-item" id="n-users">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Utilisateurs
+      </div>
+
+      <div class="nav-section">IA</div>
+      <div onclick="go('bilan-ia')" class="nav-item" id="n-bilan-ia">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Bilan IA
+      </div>
+      <div onclick="go('notifs')" class="nav-item" id="n-notifs">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Notifications
+      </div>
+    </nav>
+
+    <!-- User -->
+    <div style="padding:12px;border-top:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:var(--surface2);">
+        <div id="aAvatar" style="width:30px;height:30px;border-radius:8px;background:var(--gold-dim);border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0;">A</div>
+        <span id="aEmail" style="font-size:12px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">admin</span>
+        <button onclick="logout()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:2px;transition:color .15s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="main" style="flex:1;overflow:auto;"></main>
+</div>
+
+<!-- MODAL -->
+<div id="overlay" class="overlay" style="display:none;" onclick="overlayClick(event)">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+// ══════════════════════════════
+// CONFIG SUPABASE
+// ══════════════════════════════
+const SB_URL = 'https://tqrjwvgrdomfvgtgqgrd.supabase.co';
+const SB_KEY = 'sb_publishable_S6uP6lGlI5a0aATxtXlYEA_jbTVcC18';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+let me = null;
+
+// Catalogue navigation state
+let CN = { level:'cats', cat:null, sc:null, action:null };
+
+// ── Recherche globale actions — cache (ne pas toucher aux autres caches) ──
+let _actSearchTerm = '';
+let _actSearchResults = null; // null = pas de recherche active, [] = recherche sans résultat
+
+// ══════════════════════════════
+// AUTH
+// ══════════════════════════════
+async function login() {
+  const email = gi('lEmail').value.trim();
+  const pwd = gi('lPwd').value;
+  const btn = gi('lBtn');
+  if (!email || !pwd) { lerr('Remplis tous les champs.'); return; }
+  btn.innerHTML = '<span class="loader"></span>'; btn.disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pwd });
+  if (error) { lerr(error.message); btn.innerHTML = 'Se connecter'; btn.disabled = false; return; }
+  me = data.user;
+  const { data: p } = await sb.from('profiles').select('is_admin').eq('id', me.id).single();
+  if (!p?.is_admin) { await sb.auth.signOut(); lerr('Accès refusé — compte non autorisé.'); btn.innerHTML = 'Se connecter'; btn.disabled = false; return; }
+  showApp();
+}
+function lerr(msg) { const e = gi('loginErr'); e.textContent = msg; e.style.display = 'block'; }
+async function logout() { await sb.auth.signOut(); gi('appScreen').style.display = 'none'; gi('loginScreen').style.display = 'flex'; }
+function showApp() {
+  gi('loginScreen').style.display = 'none';
+  gi('appScreen').style.display = 'flex';
+  const em = me?.email || '';
+  gi('aEmail').textContent = em.split('@')[0];
+  gi('aAvatar').textContent = (em[0] || 'A').toUpperCase();
+  go('dash');
+}
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session) {
+    me = session.user;
+    sb.from('profiles').select('is_admin').eq('id', me.id).single().then(({ data: p }) => { if (p?.is_admin) showApp(); });
+  }
+});
+
+// ══════════════════════════════
+// NAVIGATION
+// ══════════════════════════════
+
+// ── Sidebar hamburger helpers (mobile) ──
+function toggleSidebar() {
+  const s = document.getElementById('sidebar');
+  const b = document.getElementById('sidebarBackdrop');
+  const open = s.classList.toggle('open');
+  if (open) { b.classList.add('open'); } else { b.classList.remove('open'); }
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('open');
+}
+
+function go(page) {
+  closeSidebar(); // ferme le drawer mobile après navigation
+  document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+  const el = document.getElementById('n-' + page);
+  if (el) el.classList.add('active');
+  const pages = { dash: renderDash, cat: () => { CN = {level:'cats',cat:null,sc:null,action:null}; _actSearchTerm=''; _actSearchResults=null; renderCat(); }, defis: renderDefis, users: renderUsers, 'bilan-ia': renderBilanIA, notifs: renderNotifs };
+  if (pages[page]) pages[page]();
+}
+
+// ══════════════════════════════
+// UTILS
+// ══════════════════════════════
+const gi = id => document.getElementById(id);
+const v = id => { const e = gi(id); return e ? e.value.trim() : ''; };
+const cb = id => { const e = gi(id); return e ? e.checked : false; };
+const num = id => { const n = parseInt(v(id)); return isNaN(n) ? null : n; };
+const esc = s => (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+function set(html) { gi('main').innerHTML = html; }
+const h = s => String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+function load() { set('<div style="padding:40px;display:flex;align-items:center;gap:12px;"><span class="loader"></span><span style="color:var(--text2);font-size:14px;">Chargement...</span></div>'); }
+
+function toast(msg, type = 'ok') {
+  const t = gi('toast');
+  t.textContent = (type === 'ok' ? '✓  ' : '✕  ') + msg;
+  t.className = `${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// #modal est un nœud PERSISTANT partagé par tous les modals. gModal() le recrée
+// si jamais il a disparu (défense en profondeur — il ne doit plus être détruit).
+function gModal() {
+  let m = gi('modal');
+  if (!m) { const ov = gi('overlay'); ov.innerHTML = ''; m = document.createElement('div'); m.id = 'modal'; ov.appendChild(m); }
+  return m;
+}
+function openModal(html) { const m = gModal(); m.className = 'modal'; m.innerHTML = html; gi('overlay').style.display = 'flex'; }
+function closeModal() { gi('overlay').style.display = 'none'; const m = gi('modal'); if (m) { m.innerHTML = ''; m.className = 'modal'; } }
+function overlayClick(e) { if (e.target === gi('overlay')) closeModal(); }
+
+async function del(table, id, refresh) {
+  if (!confirm('Supprimer définitivement ? Cette action est irréversible.')) return;
+  const { error } = await sb.from(table).delete().eq('id', id);
+  if (error) { toast(error.message, 'err'); return; }
+  toast('Supprimé avec succès !');
+  if (refresh && window[refresh]) window[refresh]();
+}
+
+// ── Pastilles génériques (type / niveau / fréquence) ──
+const bType = t => { const m={basic:'b-blue',repetitive:'b-gold',engagement:'b-green'}; const l={basic:'Basique',repetitive:'Répétitive',engagement:'Engagement'}; return `<span class="badge ${m[t]||'b-gray'}">${l[t]||t||'-'}</span>`; };
+const bLevel = l => { const m={essentiel:'b-green',approfondi:'b-blue',complet:'b-gold'}; const n={essentiel:'Essentiel',approfondi:'Approfondi',complet:'Complet'}; return `<span class="badge ${m[l]||'b-gray'}">${n[l]||l||'-'}</span>`; };
+const bFreq = f => { const l={daily:'Quotidien',weekly:'Hebdo',monthly:'Mensuel',flexible:'Flexible',ponctual:'Ponctuel'}; return `<span class="badge b-gray">${l[f]||f||'-'}</span>`; };
+const bDiff = d => { const m={facile:'b-green',moyen:'b-gold',difficile:'b-red'}; return `<span class="badge ${m[d]||'b-gray'}">${d||'-'}</span>`; };
+
+// ══════════════════════════════
+// DASHBOARD
+// ══════════════════════════════
+async function renderDash() {
+  load();
+  const [c,a,u,d] = await Promise.all([
+    sb.from('categories').select('*',{count:'exact'}),
+    sb.from('predefined_actions').select('*',{count:'exact'}),
+    sb.from('profiles').select('*',{count:'exact'}),
+    sb.from('defis').select('*',{count:'exact'}),
+  ]);
+  const pct = Math.min(100, Math.round(((a.count||0)/200)*100));
+
+  // ── Section « 📊 Activité » — stats d'usage (lecture seule, agrégation client-side) ──
+  const activite = await loadActiviteStats();
+
+  set(`<div style="padding:32px;max-width:1200px;">
+    <!-- Header -->
+    <div style="margin-bottom:28px;">
+      <h1 style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.4px;">Dashboard</h1>
+      <p style="font-size:13px;color:var(--text2);margin-top:4px;">Vue d'ensemble — Heshbon Nefesh Admin</p>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;">
+      ${statCard('Catégories', c.count||0, '🗂️', 'var(--gold)', '#C9A84C')}
+      ${statCard('Actions', a.count||0, '✅', 'var(--blue)', '#3B82F6')}
+      ${statCard('Users', u.count||0, '👥', 'var(--purple)', '#8B5CF6')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <!-- Catalogue state -->
+      <div class="card" style="padding:22px;">
+        <p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:18px;">État du catalogue</p>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--text2);">Actions totales</span>
+            <span style="font-size:16px;font-weight:800;color:var(--text);">${a.count||0}</span>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:11px;color:var(--text3);">Progression catalogue</span>
+            <span style="font-size:12px;font-weight:700;color:var(--gold);">${pct}%</span>
+          </div>
+          <div style="height:6px;background:var(--surface3);border-radius:99px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:99px;"></div>
+          </div>
+          <p style="font-size:11px;color:var(--text3);margin-top:6px;">${a.count||0} / ~200 actions prévues</p>
+        </div>
+      </div>
+
+      <!-- Quick access -->
+      <div class="card" style="padding:22px;">
+        <p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:18px;">Accès rapide</p>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${ql('➕ Ajouter une action au catalogue',"go('cat')")}
+          ${ql('⭐ Créer un défi ou scénario',"go('defis')")}
+          ${ql('👥 Gérer les utilisateurs',"go('users')")}
+        </div>
+      </div>
+    </div>
+
+    ${renderActiviteSection(activite)}
+  </div>`);
+}
+
+// ── « 📊 Activité » : chargement des stats d'usage (lecture seule) ──
+// Toutes les agrégations sont faites CÔTÉ CLIENT en JS (PostgREST ne fait pas
+// de GROUP BY/DISTINCT arbitraire). Volumétrie faible (pré-lancement). Chaque
+// stat est isolée dans son propre try/catch : une requête en échec retombe sur
+// des valeurs neutres (0) sans casser le reste du dashboard.
+async function loadActiviteStats() {
+  const now = Date.now();
+  const iso7   = new Date(now - 7 * 864e5).toISOString();          // pour sent_at / generated_at (timestamptz)
+  const iso30  = new Date(now - 30 * 864e5).toISOString();
+  const date7  = new Date(now - 7 * 864e5).toISOString().split('T')[0];  // pour daily_progress.date (type date)
+  const date30 = new Date(now - 30 * 864e5).toISOString().split('T')[0];
+
+  const out = {
+    empty: true,                                  // passe à false dès qu'une table renvoie ≥1 ligne
+    active7: 0, active30: 0,
+    topActions: [],                               // [{ title, count }]
+    bilan7: { n: 0, cost: 0 }, bilan30: { n: 0, cost: 0 },
+    premium: { total: 0, premium: 0, free: 0, expiringSoon: 0 },
+    notifs7: {}, notifs30: {},                    // { status: count }
+  };
+
+  // 1) Users actifs 7j / 30j — daily_progress (complétions) → user_id distinct
+  // 2) Top 10 actions pratiquées — daily_progress.user_action_id sur 30j
+  // (une seule requête 30j couvre actifs + top ; on déduit le 7j par filtrage)
+  let topUserActionIds = [];
+  try {
+    const [dp30, dp7] = await Promise.all([
+      sb.from('daily_progress').select('user_id,user_action_id').eq('completed', true).gte('date', date30),
+      sb.from('daily_progress').select('user_id').eq('completed', true).gte('date', date7),
+    ]);
+    const rows30 = dp30.data || [];
+    const rows7  = dp7.data  || [];
+    if (rows30.length || rows7.length) out.empty = false;
+
+    out.active30 = new Set(rows30.map(r => r.user_id)).size;
+    out.active7  = new Set(rows7.map(r => r.user_id)).size;
+
+    const cnt = {};
+    rows30.forEach(r => { if (r.user_action_id != null) cnt[r.user_action_id] = (cnt[r.user_action_id] || 0) + 1; });
+    const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    topUserActionIds = top.map(([id]) => id);
+    out._topRaw = top;   // [[user_action_id, count], ...] — libellés résolus plus bas
+  } catch (e) { console.warn('[activite] daily_progress', e); }
+
+  // Résolution des libellés du top : user_actions → predefined_actions.title_fr
+  try {
+    if (topUserActionIds.length) {
+      const { data: uaRows } = await sb.from('user_actions').select('id,predefined_action_id').in('id', topUserActionIds);
+      const ua = uaRows || [];
+      if (ua.length) out.empty = false;
+      const uaMap = {}; ua.forEach(r => { uaMap[r.id] = r.predefined_action_id; });
+      const predIds = [...new Set(ua.map(r => r.predefined_action_id).filter(x => x != null))];
+      let titleMap = {};
+      if (predIds.length) {
+        const { data: pRows } = await sb.from('predefined_actions').select('id,title_fr').in('id', predIds);
+        (pRows || []).forEach(p => { titleMap[p.id] = p.title_fr; });
+      }
+      out.topActions = (out._topRaw || []).map(([uaId, count]) => {
+        const predId = uaMap[uaId];
+        const title = predId != null ? titleMap[predId] : null;
+        return { title: title || '—', count };   // orphan user_action / predefined → '—'
+      });
+    }
+  } catch (e) { console.warn('[activite] top labels', e); }
+  delete out._topRaw;
+
+  // 3) Bilans IA 7j/30j + coût réel — bilan_ia_audit (⚠️ generated_at, JAMAIS created_at)
+  try {
+    const [b7, b30] = await Promise.all([
+      sb.from('bilan_ia_audit').select('cost_estimate_usd,status').gte('generated_at', iso7),
+      sb.from('bilan_ia_audit').select('cost_estimate_usd,status').gte('generated_at', iso30),
+    ]);
+    const agg = rows => {
+      const r = rows || [];
+      const cost = r.reduce((a, x) => a + (Number(x.cost_estimate_usd) || 0), 0);  // null ignoré
+      return { n: r.length, cost };
+    };
+    const r7 = b7.data || [], r30 = b30.data || [];
+    if (r7.length || r30.length) out.empty = false;
+    out.bilan7  = agg(r7);
+    out.bilan30 = agg(r30);
+  } catch (e) { console.warn('[activite] bilan_ia_audit', e); }
+
+  // 4) Premium vs Free — counts exacts sur profiles (déjà lisible par l'admin)
+  try {
+    const soonISO = new Date(now + 7 * 864e5).toISOString();
+    const [tot, prem, soon] = await Promise.all([
+      sb.from('profiles').select('id', { count: 'exact', head: true }),
+      sb.from('profiles').select('id', { count: 'exact', head: true }).eq('is_premium', true),
+      sb.from('profiles').select('id', { count: 'exact', head: true }).eq('is_premium', true).gte('premium_expires_at', new Date(now).toISOString()).lte('premium_expires_at', soonISO),
+    ]);
+    const total = tot.count || 0, premium = prem.count || 0;
+    if (total > 0) out.empty = false;
+    out.premium = { total, premium, free: Math.max(0, total - premium), expiringSoon: soon.count || 0 };
+  } catch (e) { console.warn('[activite] profiles premium', e); }
+
+  // 5) Notifs envoyées 7j/30j par statut — notification_log
+  try {
+    const [n7, n30] = await Promise.all([
+      sb.from('notification_log').select('status').gte('sent_at', iso7),
+      sb.from('notification_log').select('status').gte('sent_at', iso30),
+    ]);
+    const byStatus = rows => {
+      const m = {}; (rows || []).forEach(r => { const s = r.status || 'unknown'; m[s] = (m[s] || 0) + 1; });
+      return m;
+    };
+    const r7 = n7.data || [], r30 = n30.data || [];
+    if (r7.length || r30.length) out.empty = false;
+    out.notifs7  = byStatus(r7);
+    out.notifs30 = byStatus(r30);
+  } catch (e) { console.warn('[activite] notification_log', e); }
+
+  return out;
+}
+
+// ── « 📊 Activité » : rendu HTML (réutilise .card + .stat existants) ──
+function renderActiviteSection(s) {
+  s = s || {};
+  const noteRLS = s.empty
+    ? `<div class="card2" style="padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--text2);border-left:3px solid var(--gold);">
+         Stats à 0 ? Applique la migration <code style="font-family:'JetBrains Mono',monospace;color:var(--gold);">20260612000005_admin_stats_read.sql</code> (RLS lecture admin).
+       </div>`
+    : '';
+
+  const fmtCost = c => (Number(c) || 0).toFixed(3);
+  const prem = s.premium || { total: 0, premium: 0, free: 0, expiringSoon: 0 };
+  const premPct = prem.total > 0 ? Math.round(prem.premium / prem.total * 100) : 0;
+
+  // Bilan IA : coût réel ; fallback indicatif nb×0.014$ seulement si somme réelle nulle
+  const bilanCostCell = (b) => {
+    const n = b.n || 0, cost = Number(b.cost) || 0;
+    if (cost > 0) return `<span style="font-family:'JetBrains Mono',monospace;">$${fmtCost(cost)}</span>`;
+    const est = n * 0.014;
+    return `<span style="font-family:'JetBrains Mono',monospace;color:var(--text3);" title="Coût réel indisponible — estimation nb×0.014$">~$${est.toFixed(3)} <span style="font-size:10px;">(est.)</span></span>`;
+  };
+
+  // Top actions
+  const topRows = (s.topActions || []).length
+    ? s.topActions.map((a, i) => {
+        const max = s.topActions[0].count || 1;
+        const w = Math.max(4, Math.round((a.count / max) * 100));
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:11px;color:var(--text3);width:18px;text-align:right;">${i + 1}.</span>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:3px;">
+              <span style="font-size:12.5px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${h(a.title)}</span>
+              <span style="font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0;">${a.count}</span>
+            </div>
+            <div style="height:5px;background:var(--surface3);border-radius:99px;overflow:hidden;">
+              <div style="height:100%;width:${w}%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:99px;"></div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')
+    : `<p style="font-size:12px;color:var(--text3);">Aucune action pratiquée sur 30j.</p>`;
+
+  // Notifs par statut
+  const notifStatusColor = st => ({ sent: 'var(--green)', delivered: 'var(--green)', failed: 'var(--red)', error: 'var(--red)' }[st] || 'var(--text2)');
+  const notifBlock = (label, m) => {
+    const entries = Object.entries(m || {}).sort((a, b) => b[1] - a[1]);
+    const total = entries.reduce((a, [, n]) => a + n, 0);
+    const rows = entries.length
+      ? entries.map(([st, n]) => `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;">
+            <span style="color:var(--text2);display:flex;align-items:center;gap:6px;"><span style="width:7px;height:7px;border-radius:50%;background:${notifStatusColor(st)};"></span>${h(st)}</span>
+            <span style="font-weight:700;color:var(--text);">${n}</span>
+          </div>`).join('')
+      : `<p style="font-size:12px;color:var(--text3);">Aucune.</p>`;
+    return `<div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);">${label}</span>
+        <span style="font-size:13px;font-weight:800;color:var(--text);">${total}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;">${rows}</div>
+    </div>`;
+  };
+
+  const dualStat = (label, v7, v30, color) => `<div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:var(--text2);">${h(label)}</span>
+      <span style="font-size:14px;font-weight:700;color:${color};"><span style="font-size:18px;font-weight:800;">${v7}</span> <span style="font-size:11px;color:var(--text3);">7j</span> · <span style="font-size:18px;font-weight:800;">${v30}</span> <span style="font-size:11px;color:var(--text3);">30j</span></span>
+    </div>`;
+
+  return `
+    <div style="margin-top:28px;">
+      <h2 style="font-size:17px;font-weight:800;color:var(--text);letter-spacing:-0.3px;margin-bottom:4px;">📊 Activité</h2>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:16px;">Statistiques d'usage — lecture seule, fenêtres 7j / 30j</p>
+      ${noteRLS}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+
+        <!-- Users actifs -->
+        <div class="card" style="padding:22px;">
+          <p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:18px;">👥 Users actifs</p>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            ${dualStat('Ont pratiqué', s.active7 || 0, s.active30 || 0, 'var(--purple)')}
+            <p style="font-size:11px;color:var(--text3);">Users distincts ayant complété ≥1 action (daily_progress).</p>
+          </div>
+        </div>
+
+        <!-- Bilans IA -->
+        <div class="card" style="padding:22px;">
+          <p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:18px;">✨ Bilans IA &amp; coût</p>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            ${dualStat('Bilans générés', (s.bilan7 || {}).n || 0, (s.bilan30 || {}).n || 0, 'var(--blue)')}
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;color:var(--text2);">Coût 7j</span>${bilanCostCell(s.bilan7 || {})}
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;color:var(--text2);">Coût 30j</span>${bilanCostCell(s.bilan30 || {})}
+            </div>
+          </div>
+        </div>
+
+        <!-- Premium vs Free -->
+        <div class="card" style="padding:22px;">
+          <p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:18px;">⭐ Premium vs Free</p>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+            <span style="font-size:13px;color:var(--gold);font-weight:700;">${prem.premium} premium</span>
+            <span style="font-size:13px;color:var(--text2);">${prem.free} free</span>
+          </div>
+          <div style="height:8px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-bottom:8px;">
+            <div style="height:100%;width:${premPct}%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:99px;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:11px;color:var(--text3);">${prem.total} users · ${premPct}% premium</span>
+            ${prem.expiringSoon > 0 ? `<span class="badge b-red" style="font-size:10px;">${prem.expiringSoon} expire(nt) &lt;7j</span>` : ''}
+          </div>
+        </div>
+
+        <!-- Notifs envoyées -->
+        <div class="card" style="padding:22px;">
+          <p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:18px;">🔔 Notifs envoyées</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+            ${notifBlock('7 jours', s.notifs7)}
+            ${notifBlock('30 jours', s.notifs30)}
+          </div>
+        </div>
+
+        <!-- Top actions pratiquées (pleine largeur) -->
+        <div class="card" style="padding:22px;grid-column:1 / -1;">
+          <p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:18px;">🏆 Top 10 actions pratiquées <span style="color:var(--text3);font-weight:500;">(30j)</span></p>
+          ${topRows}
+        </div>
+
+      </div>
+    </div>`;
+}
+
+function statCard(label, val, icon, color, hex) {
+  return `<div class="stat" style="--c:${hex};">
+    <div style="position:absolute;top:-15px;right:-15px;width:70px;height:70px;border-radius:50%;background:${hex};opacity:0.06;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+      <span style="font-size:24px;">${icon}</span>
+      <span style="font-size:28px;font-weight:800;color:${color};">${val}</span>
+    </div>
+    <p style="font-size:12px;color:var(--text2);font-weight:500;">${label}</p>
+  </div>`;
+}
+function ql(label, action) {
+  return `<button onclick="${action}" style="background:none;border:none;cursor:pointer;width:100%;text-align:left;padding:10px 12px;border-radius:8px;font-size:13px;color:var(--text2);font-family:'Inter',sans-serif;transition:all .15s;" onmouseover="this.style.background='var(--gold-dim)';this.style.color='var(--gold)'" onmouseout="this.style.background='none';this.style.color='var(--text2)'">${label}</button>`;
+}
+
+// ══════════════════════════════════════
+// RECHERCHE GLOBALE ACTIONS
+// ══════════════════════════════════════
+
+/**
+ * sanitizeQ — retire les caractères qui casseraient la syntaxe .or() de PostgREST
+ * ou permettraient une injection de filtre :
+ *   ,  → cassent la liste d'arguments .or()
+ *   () → cassent le parsing de l'expression PostgREST
+ *   .  → confondu avec le séparateur de colonne PostgREST
+ *   % _ * → wildcards SQL involontaires dans ILIKE
+ *   \  → caractère d'échappement LIKE
+ * Conserve : lettres (accents, hébreu, latin), chiffres, espaces, apostrophes.
+ */
+function sanitizeQ(q) {
+  return (q || '').replace(/[,().%_*\\]/g, '').trim();
+}
+
+let _actSearchDebounce = null;
+
+function actSearchInput() {
+  clearTimeout(_actSearchDebounce);
+  _actSearchDebounce = setTimeout(async () => {
+    const raw = (document.getElementById('actSearch')?.value || '').trim();
+    const q = sanitizeQ(raw);
+    if (q.length < 2) {
+      _actSearchTerm = '';
+      _actSearchResults = null;
+      renderL1();
+      return;
+    }
+    _actSearchTerm = q;
+    await searchActs(q);
+  }, 250);
+}
+
+async function searchActs(q) {
+  const el = document.getElementById('act-search-results');
+  if (el) {
+    el.style.display = '';
+    const catGrid = document.getElementById('cat-grid');
+    if (catGrid) catGrid.style.display = 'none';
+    el.innerHTML = '<div style="padding:20px;display:flex;align-items:center;gap:10px;"><span class="loader"></span><span style="color:var(--text2);font-size:13px;">Recherche…</span></div>';
+  }
+  try {
+    const { data, error } = await sb
+      .from('predefined_actions')
+      .select('id,title_fr,title_he,title_en,code,sous_category_id,actif')
+      .or(`title_fr.ilike.%${q}%,title_he.ilike.%${q}%,title_en.ilike.%${q}%,code.ilike.%${q}%`)
+      .limit(50);
+    if (error) { toast(error.message, 'err'); _actSearchResults = []; }
+    else _actSearchResults = data || [];
+  } catch (e) {
+    toast('Erreur de recherche', 'err');
+    _actSearchResults = [];
+  }
+  renderSearchResults();
+}
+
+function renderSearchResults() {
+  const el = document.getElementById('act-search-results');
+  if (!el) return;
+  // Afficher la zone résultats, masquer la grille de navigation
+  el.style.display = '';
+  const catGrid = document.getElementById('cat-grid');
+  if (catGrid) catGrid.style.display = 'none';
+  const results = _actSearchResults || [];
+  const q = _actSearchTerm;
+  if (!results.length) {
+    el.innerHTML = `<div style="padding:40px;text-align:center;"><div style="font-size:32px;margin-bottom:10px;">🔍</div><p style="color:var(--text2);font-size:14px;">Aucun résultat pour <strong>${h(q)}</strong></p></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;font-weight:500;">${results.length} résultat${results.length > 1 ? 's' : ''} pour « ${h(q)} »</p>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      ${results.map(a => `
+      <div class="card" style="padding:14px 16px;display:flex;align-items:flex-start;gap:12px;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px;">
+            <span style="font-size:14px;font-weight:700;color:var(--text);">${h(a.title_fr)}</span>
+            ${a.title_he ? `<span style="font-size:12px;color:var(--text2);direction:rtl;">${h(a.title_he)}</span>` : ''}
+            ${a.title_en ? `<span style="font-size:12px;color:var(--text3);">${h(a.title_en)}</span>` : ''}
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
+            <span style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;background:var(--surface3);padding:2px 6px;border-radius:4px;">${h(a.code)}</span>
+            ${a.actif ? '<span class="badge b-green">Actif</span>' : '<span class="badge b-red">Inactif</span>'}
+          </div>
+        </div>
+        <button onclick="openActModal('${esc(a.id)}')" class="btn btn-blue btn-sm" style="flex-shrink:0;">✏️ Modifier</button>
+      </div>`).join('')}
+    </div>`;
+}
+
+// ══════════════════════════════════════
+// CATALOGUE — NAVIGATION HIÉRARCHIQUE
+// ══════════════════════════════════════
+function renderCat() {
+  if (CN.level === 'cats') renderL1();
+  else if (CN.level === 'scs') renderL2();
+  else if (CN.level === 'actions') renderL3();
+  else if (CN.level === 'etapes') renderL4();
+}
+
+function bc() {
+  const parts = [{ label:'🗂 Catalogue', fn:`CN={level:'cats',cat:null,sc:null,action:null};renderCat()` }];
+  if (CN.cat) parts.push({ label: h(CN.cat.nom_fr), fn:`CN.level='scs';CN.sc=null;CN.action=null;renderCat()` });
+  if (CN.sc) parts.push({ label: h(CN.sc.nom_fr), fn:`CN.level='actions';CN.action=null;renderCat()` });
+  if (CN.action) parts.push({ label: h(CN.action.title_fr), fn: null });
+  return `<div class="bc" style="display:flex;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
+    ${parts.map((p,i) => `
+      ${i > 0 ? '<span class="bc-sep">›</span>' : ''}
+      ${p.fn ? `<span class="bc-link" onclick="${p.fn}">${p.label}</span>` : `<span class="bc-cur">${p.label}</span>`}
+    `).join('')}
+  </div>`;
+}
+
+// ── L1 : Catégories ──
+async function renderL1() {
+  CN.level = 'cats'; load();
+  const { data: cats } = await sb.from('categories').select('*').order('ordre');
+  const counts = {};
+  for (const c of (cats||[])) {
+    const scIds = (await sb.from('sous_categories').select('id').eq('category_id', c.id)).data?.map(s=>s.id)||[];
+    if (scIds.length) { const { count } = await sb.from('predefined_actions').select('*',{count:'exact'}).in('sous_category_id', scIds); counts[c.id] = count||0; }
+    else counts[c.id] = 0;
+  }
+
+  set(`<div style="padding:32px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div>
+        <h1 style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.4px;">Catalogue</h1>
+        <p style="font-size:13px;color:var(--text2);margin-top:4px;">${cats?.length||0} catégories · Cliquez pour explorer</p>
+      </div>
+      <button onclick="openCatModal()" class="btn btn-gold">+ Catégorie</button>
+    </div>
+    <div style="margin-bottom:20px;">
+      <input class="inp" id="actSearch" placeholder="🔍 Rechercher une action (titre FR/HE/EN ou code)…" oninput="actSearchInput()" value="${h(_actSearchTerm)}" autocomplete="off" style="max-width:540px;">
+    </div>
+    <div id="act-search-results"${_actSearchResults === null ? ' style="display:none;"' : ''}></div>
+    <div id="cat-grid"${_actSearchResults !== null ? ' style="display:none;"' : ''}>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+        ${(cats||[]).map(c => `
+        <div class="cat-card" onclick="CN.cat={id:'${c.id}',nom_fr:'${esc(c.nom_fr)}',couleur:'${c.couleur||'#3498db'}',code:'${c.code}'};CN.level='scs';renderCat()" style="border-left:4px solid ${c.couleur||'#3498db'};">
+          <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:${c.couleur||'#3498db'};opacity:0.05;pointer-events:none;"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:${c.couleur||'#3498db'}18;display:flex;align-items:center;justify-content:center;font-size:18px;">📁</div>
+            <div style="display:flex;gap:6px;" onclick="event.stopPropagation()">
+              <button onclick="openCatModal('${c.id}')" class="btn btn-blue btn-icon">✏️</button>
+              <button onclick="del('categories','${c.id}','renderL1')" class="btn btn-red btn-icon">✕</button>
+            </div>
+          </div>
+          <h3 style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px;">${h(c.nom_fr)}</h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:2px;direction:rtl;text-align:right;">${h(c.nom_he)}</p>
+          <p style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:14px;">${h(c.code)}</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span class="badge b-gray">${counts[c.id]||0} actions</span>
+            <svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>`).join('')}
+        <!-- Add card -->
+        <div class="cat-card cat-add" onclick="openCatModal()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;text-align:center;">
+          <div style="width:40px;height:40px;border-radius:12px;background:var(--surface3);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <p style="font-size:13px;color:var(--text3);font-weight:500;">Nouvelle catégorie</p>
+        </div>
+      </div>
+    </div>
+  </div>`);
+  if (_actSearchResults !== null) renderSearchResults();
+}
+
+// ── L2 : Sous-catégories ──
+async function renderL2() {
+  CN.level = 'scs'; load();
+  const { data: scs } = await sb.from('sous_categories').select('*').eq('category_id', CN.cat.id).order('ordre');
+  const counts = {};
+  for (const s of (scs||[])) { const { count } = await sb.from('predefined_actions').select('*',{count:'exact'}).eq('sous_category_id', s.id); counts[s.id] = count||0; }
+  const col = CN.cat.couleur;
+
+  set(`<div style="padding:32px;">
+    ${bc()}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <div style="width:12px;height:12px;border-radius:50%;background:${col};"></div>
+          <h1 style="font-size:20px;font-weight:800;color:var(--text);">${h(CN.cat.nom_fr)}</h1>
+        </div>
+        <p style="font-size:13px;color:var(--text2);">${scs?.length||0} sous-catégories</p>
+      </div>
+      <button onclick="openSCModal()" class="btn btn-gold">+ Sous-catégorie</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+      ${(scs||[]).map(s => `
+      <div class="cat-card" onclick="CN.sc={id:'${s.id}',nom_fr:'${esc(s.nom_fr)}'};CN.level='actions';renderCat()" style="border-left:3px solid ${col};">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+          <div style="width:34px;height:34px;border-radius:10px;background:${col}18;display:flex;align-items:center;justify-content:center;">📂</div>
+          <div style="display:flex;gap:5px;" onclick="event.stopPropagation()">
+            <button onclick="openSCModal('${s.id}')" class="btn btn-blue btn-icon btn-sm">✏️</button>
+            <button onclick="del('sous_categories','${s.id}','renderL2')" class="btn btn-red btn-icon btn-sm">✕</button>
+          </div>
+        </div>
+        <h3 style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;">${h(s.nom_fr)}</h3>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:2px;">${h(s.nom_he)}</p>
+        <p style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:12px;">${h(s.code)}</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span class="badge b-gray">${counts[s.id]||0} action${(counts[s.id]||0)>1?'s':''}</span>
+          <svg class="arr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </div>`).join('')}
+      <div class="cat-card cat-add" onclick="openSCModal()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;text-align:center;">
+        <div style="width:34px;height:34px;border-radius:10px;background:var(--surface3);display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <p style="font-size:12px;color:var(--text3);">Nouvelle sous-catégorie</p>
+      </div>
+    </div>
+  </div>`);
+}
+
+// ── L3 : Actions ──
+async function renderL3() {
+  CN.level = 'actions'; load();
+  const { data: acts } = await sb.from('predefined_actions').select('*').eq('sous_category_id', CN.sc.id).order('created_at',{ascending:false});
+
+  set(`<div style="padding:32px;">
+    ${bc()}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <h1 style="font-size:20px;font-weight:800;color:var(--text);">${h(CN.sc.nom_fr)}</h1>
+        <p style="font-size:13px;color:var(--text2);margin-top:3px;">${acts?.length||0} action${(acts?.length||0)>1?'s':''}</p>
+      </div>
+      <button onclick="openActModal()" class="btn btn-gold">+ Action</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      ${(acts||[]).map(a => `
+      <div class="action-item">
+        <div style="display:flex;align-items:flex-start;gap:14px;">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+              <h3 style="font-size:14px;font-weight:700;color:var(--text);">${h(a.title_fr)}</h3>
+              ${a.title_he ? `<span style="font-size:12px;color:var(--text2);direction:rtl;">${h(a.title_he)}</span>` : ''}
+              ${!a.actif ? '<span class="badge b-red">Inactif</span>' : ''}
+            </div>
+            ${a.description_fr ? `<p style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5;">${h(a.description_fr.substring(0,120))}${a.description_fr.length>120?'...':''}</p>` : ''}
+            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+              ${bType(a.action_type)}${bLevel(a.level)}${bFreq(a.frequency)}
+              ${a.is_calendar_triggered ? '<span class="badge b-purple">✡️ Fête</span>' : ''}
+              ${a.zman_trigger ? `<span class="badge b-purple">🕐 ${h(a.zman_trigger)}</span>` : ''}
+              ${a.has_counter ? '<span class="badge b-gray">🔢 Compteur</span>' : ''}
+              ${a.can_have_engagement ? '<span class="badge b-gray">💪 Engagement</span>' : ''}
+              ${a.has_duration ? `<span class="badge b-gray">⏱ Durée ${a.duration_suggested_minutes?a.duration_suggested_minutes+' '+a.duration_unit:''}</span>` : ''}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button onclick="CN.action={id:'${a.id}',title_fr:'${esc(a.title_fr)}'};CN.level='etapes';renderCat()" class="btn btn-ghost btn-sm">📋 Étapes</button>
+            <button onclick="openActModal('${a.id}')" class="btn btn-blue btn-sm">✏️</button>
+            <button onclick="del('predefined_actions','${a.id}','renderL3')" class="btn btn-red btn-sm">✕</button>
+          </div>
+        </div>
+      </div>`).join('')}
+      ${!(acts?.length) ? `<div class="card" style="padding:48px;text-align:center;"><div style="font-size:36px;margin-bottom:12px;">📭</div><p style="color:var(--text2);margin-bottom:16px;">Aucune action dans cette sous-catégorie</p><button onclick="openActModal()" class="btn btn-gold">+ Ajouter une action</button></div>` : ''}
+    </div>
+  </div>`);
+}
+
+// ── L4 : Étapes ──
+async function renderL4() {
+  CN.level = 'etapes'; load();
+  const { data: etapes } = await sb.from('predefined_sous_actions').select('*').eq('action_id', CN.action.id).order('ordre');
+
+  set(`<div style="padding:32px;">
+    ${bc()}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <h1 style="font-size:20px;font-weight:800;color:var(--text);">${h(CN.action.title_fr)}</h1>
+        <p style="font-size:13px;color:var(--text2);margin-top:3px;">${etapes?.length||0} étape${(etapes?.length||0)>1?'s':''}</p>
+      </div>
+      <button onclick="openEtapeModal()" class="btn btn-gold">+ Étape</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      ${(etapes||[]).map((e,i) => `
+      <div class="action-item" style="display:flex;align-items:center;gap:14px;">
+        <div style="width:30px;height:30px;border-radius:8px;background:var(--gold-dim);border:1px solid rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0;">${e.ordre||i+1}</div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:14px;font-weight:600;color:var(--text);">${h(e.titre_fr)}</p>
+          ${e.titre_he ? `<p style="font-size:12px;color:var(--text2);direction:rtl;">${h(e.titre_he)}</p>` : ''}
+          ${e.titre_en ? `<p style="font-size:12px;color:var(--text3);">${h(e.titre_en)}</p>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${e.is_optional ? '<span class="badge b-gray">Optionnelle</span>' : '<span class="badge b-blue">Requise</span>'}
+          <button onclick="openEtapeModal('${e.id}')" class="btn btn-blue btn-sm">✏️</button>
+          <button onclick="del('predefined_sous_actions','${e.id}','renderL4')" class="btn btn-red btn-sm">✕</button>
+        </div>
+      </div>`).join('')}
+      ${!(etapes?.length) ? `<div class="card" style="padding:48px;text-align:center;"><div style="font-size:36px;margin-bottom:12px;">📋</div><p style="color:var(--text2);margin-bottom:16px;">Aucune étape pour cette action</p><button onclick="openEtapeModal()" class="btn btn-gold">+ Ajouter une étape</button></div>` : ''}
+    </div>
+  </div>`);
+}
+
+// ══════════════════════════════════════
+// MODALS CATALOGUE
+// ══════════════════════════════════════
+
+// ── Catégorie ──
+async function openCatModal(id=null) {
+  let it={code:'',nom_fr:'',nom_he:'',nom_en:'',icone:'',couleur:'#3498db',ordre:0,actif:true};
+  if(id){const{data}=await sb.from('categories').select('*').eq('id',id).single();if(data)it=data;}
+  openModal(`<div style="padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h2 style="font-size:17px;font-weight:800;color:var(--text);">${id?'Modifier la catégorie':'Nouvelle catégorie'}</h2>
+      <button onclick="closeModal()" class="btn btn-ghost btn-icon">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label class="fl">Code unique *</label><input id="c_code" class="inp" value="${h(it.code)}" placeholder="VIE_QUOTIDIENNE"></div>
+        <div><label class="fl">Ordre</label><input id="c_ordre" type="number" class="inp" value="${h(it.ordre)}"></div>
+      </div>
+      <div><label class="fl">Nom FR *</label><input id="c_fr" class="inp" value="${h(it.nom_fr)}"></div>
+      <div><label class="fl">Nom HE (hébreu)</label><input id="c_he" class="inp" value="${h(it.nom_he)}" dir="rtl" placeholder="חיים יומיומיים"></div>
+      <div><label class="fl">Nom EN</label><input id="c_en" class="inp" value="${h(it.nom_en)}" placeholder="Daily Life"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label class="fl">Icône (Ionicons)</label><input id="c_icone" class="inp" value="${h(it.icone)}" placeholder="sunny, heart..."></div>
+        <div><label class="fl">Couleur thème</label>
+          <div style="display:flex;gap:8px;">
+            <input id="c_col" class="inp" style="flex:1;" value="${h(it.couleur||'#3498db')}">
+            <input type="color" value="${h(it.couleur||'#3498db')}" oninput="gi('c_col').value=this.value" style="width:38px;height:38px;border-radius:8px;border:1.5px solid var(--border);background:none;padding:2px;cursor:pointer;">
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <label class="toggle"><input type="checkbox" id="c_actif" ${it.actif?'checked':''}><span class="tslider"></span></label>
+        <span style="font-size:13px;color:var(--text2);">Catégorie active (visible dans l'app)</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <button onclick="saveCat('${id||''}')" class="btn btn-gold" style="flex:1;justify-content:center;padding:11px;">💾 ${id?'Enregistrer':'Créer'}</button>
+      <button onclick="closeModal()" class="btn btn-ghost">Annuler</button>
+    </div>
+  </div>`);
+}
+async function saveCat(id) {
+  const d={code:v('c_code').toUpperCase(),nom_fr:v('c_fr'),nom_he:v('c_he')||null,nom_en:v('c_en')||null,icone:v('c_icone')||null,couleur:v('c_col'),ordre:num('c_ordre')||0,actif:cb('c_actif')};
+  if(!d.code||!d.nom_fr){toast('Code et nom FR obligatoires','err');return;}
+  const{error}=id?await sb.from('categories').update(d).eq('id',id):await sb.from('categories').insert(d);
+  if(error){toast(error.message,'err');return;}
+  toast(id?'Catégorie mise à jour !':'Catégorie créée !'); closeModal(); renderL1();
+}
+
+// ── Sous-catégorie ──
+async function openSCModal(id=null) {
+  const{data:cats}=await sb.from('categories').select('id,nom_fr').order('ordre');
+  let it={code:'',nom_fr:'',nom_he:'',nom_en:'',icone:'',couleur:'',ordre:0,category_id:CN.cat?.id||''};
+  if(id){const{data}=await sb.from('sous_categories').select('*').eq('id',id).single();if(data)it=data;}
+  openModal(`<div style="padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h2 style="font-size:17px;font-weight:800;color:var(--text);">${id?'Modifier':'Nouvelle sous-catégorie'}</h2>
+      <button onclick="closeModal()" class="btn btn-ghost btn-icon">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div><label class="fl">Catégorie parente *</label>
+        <select id="sc_cat" class="inp">${(cats||[]).map(c=>`<option value="${h(c.id)}" ${it.category_id===c.id?'selected':''}>${h(c.nom_fr)}</option>`).join('')}</select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label class="fl">Code unique *</label><input id="sc_code" class="inp" value="${h(it.code)}" placeholder="REVEIL_MATIN"></div>
+        <div><label class="fl">Ordre</label><input id="sc_ordre" type="number" class="inp" value="${h(it.ordre)}"></div>
+      </div>
+      <div><label class="fl">Nom FR *</label><input id="sc_fr" class="inp" value="${h(it.nom_fr)}"></div>
+      <div><label class="fl">Nom HE</label><input id="sc_he" class="inp" value="${h(it.nom_he)}" dir="rtl"></div>
+      <div><label class="fl">Nom EN</label><input id="sc_en" class="inp" value="${h(it.nom_en)}"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label class="fl">Icône</label><input id="sc_icone" class="inp" value="${h(it.icone)}"></div>
+        <div><label class="fl">Couleur</label>
+          <div style="display:flex;gap:8px;"><input id="sc_col" class="inp" style="flex:1;" value="${h(it.couleur)}"><input type="color" value="${h(it.couleur||'#3498db')}" oninput="gi('sc_col').value=this.value" style="width:38px;height:38px;border-radius:8px;border:1.5px solid var(--border);background:none;padding:2px;cursor:pointer;"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <button onclick="saveSC('${id||''}')" class="btn btn-gold" style="flex:1;justify-content:center;padding:11px;">💾 ${id?'Enregistrer':'Créer'}</button>
+      <button onclick="closeModal()" class="btn btn-ghost">Annuler</button>
+    </div>
+  </div>`);
+}
+async function saveSC(id) {
+  const d={code:v('sc_code').toUpperCase(),nom_fr:v('sc_fr'),nom_he:v('sc_he')||null,nom_en:v('sc_en')||null,icone:v('sc_icone')||null,couleur:v('sc_col')||null,ordre:num('sc_ordre')||0,category_id:v('sc_cat')||null};
+  if(!d.code||!d.nom_fr){toast('Code et nom FR obligatoires','err');return;}
+  const{error}=id?await sb.from('sous_categories').update(d).eq('id',id):await sb.from('sous_categories').insert(d);
+  if(error){toast(error.message,'err');return;}
+  toast(id?'Mise à jour !':'Créée !'); closeModal(); renderL2();
+}
+
+// ── Action — FORMULAIRE COMPLET ──
+async function openActModal(id=null) {
+  let it={code:'',sous_category_id:CN.sc?.id||'',title_fr:'',title_he:'',title_en:'',description_fr:'',description_he:'',description_en:'',tips:'',tips_he:'',tips_en:'',action_type:'basic',frequency:'daily',timing_moment:'any_time',is_calendar_triggered:false,calendar_event_code:'',zman_trigger:'',zman_notif_minutes_before:15,has_counter:false,can_have_engagement:false,has_duration:false,duration_suggested_minutes:null,duration_min_minutes:null,duration_max_minutes:null,duration_unit:'minutes',engagement_suggested_days:null,preferred_time:null,gender:'tous',status_marital:'tous',has_children:'tous',level:'essentiel',is_free:false,actif:true};
+  if(id){const{data}=await sb.from('predefined_actions').select('*').eq('id',id).single();if(data)it={...it,...data};}
+
+  openModal(`<div style="padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div>
+        <h2 style="font-size:17px;font-weight:800;color:var(--text);">${id?'Modifier l\'action':'Nouvelle action'}</h2>
+        <p style="font-size:12px;color:var(--text2);margin-top:2px;">${h(CN.sc?.nom_fr)}</p>
+      </div>
+      <button onclick="closeModal()" class="btn btn-ghost btn-icon">✕</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-bar" style="margin-bottom:20px;overflow-x:auto;">
+      <div onclick="aTab('gen')" class="tab active" id="t-gen">📝 Général</div>
+      <div onclick="aTab('trad')" class="tab" id="t-trad">🌍 Traductions</div>
+      <div onclick="aTab('conf')" class="tab" id="t-conf">⚙️ Configuration</div>
+      <div onclick="aTab('dur')" class="tab" id="t-dur">⏱ Durée</div>
+      <div onclick="aTab('acc')" class="tab" id="t-acc">👤 Profil & Accès</div>
+    </div>
+
+    <!-- GÉNÉRAL -->
+    <div id="tc-gen" style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label class="fl">Code unique *</label><input id="a_code" class="inp" value="${h(it.code)}" placeholder="mode_ani"></div>
+        <div>
+          <label class="fl">Niveau minimum requis *</label>
+          <p style="font-size:11px;color:var(--text3);margin-bottom:6px;">L'action sera visible à partir de ce niveau</p>
+          <select id="a_level" class="inp">
+            <option value="essentiel" ${it.level==='essentiel'?'selected':''}>🌿 Essentiel — tous les niveaux</option>
+            <option value="approfondi" ${it.level==='approfondi'?'selected':''}>📚 Approfondi et Complet</option>
+            <option value="complet" ${it.level==='complet'?'selected':''}>⭐ Complet uniquement</option>
+          </select>
+        </div>
+      </div>
+      <div><label class="fl">Titre FR *</label><input id="a_tfr" class="inp" value="${h(it.title_fr)}"></div>
+      <div><label class="fl">Description FR</label><textarea id="a_dfr" class="inp" rows="3">${h(it.description_fr)}</textarea></div>
+      <div><label class="fl">💡 Conseil / Tips (affiché à l'user)</label><textarea id="a_tips" class="inp" rows="2">${h(it.tips)}</textarea></div>
+    </div>
+
+    <!-- TRADUCTIONS -->
+    <div id="tc-trad" style="display:none;flex-direction:column;gap:14px;">
+      ${it.tips ? `<div class="msec" style="background:var(--bg2);border:1px dashed var(--border);"><p style="font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">💡 Tips FR (référence)</p><p style="font-size:13px;color:var(--text2);white-space:pre-wrap;">${h(it.tips)}</p></div>` : ''}
+      <div class="msec">
+        <p style="font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;">🇮🇱 Hébreu</p>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div><label class="fl">Titre HE</label><input id="a_the" class="inp" value="${h(it.title_he)}" dir="rtl" placeholder="מודה אני"></div>
+          <div><label class="fl">Description HE</label><textarea id="a_dhe" class="inp" rows="3" dir="rtl">${h(it.description_he)}</textarea></div>
+          <div><label class="fl">💡 Tips HE</label><textarea id="a_tips_he" class="inp" rows="2" dir="rtl">${h(it.tips_he||'')}</textarea></div>
+        </div>
+      </div>
+      <div class="msec">
+        <p style="font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--blue);margin-bottom:14px;">🇬🇧 Anglais</p>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div><label class="fl">Titre EN</label><input id="a_ten" class="inp" value="${h(it.title_en)}" placeholder="Modeh Ani"></div>
+          <div><label class="fl">Description EN</label><textarea id="a_den" class="inp" rows="3">${h(it.description_en)}</textarea></div>
+          <div><label class="fl">💡 Tips EN</label><textarea id="a_tips_en" class="inp" rows="2">${h(it.tips_en||'')}</textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIGURATION -->
+    <div id="tc-conf" style="display:none;flex-direction:column;gap:14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label class="fl">Type d'action *</label>
+          <select id="a_type" class="inp">
+            <option value="basic" ${it.action_type==='basic'?'selected':''}>✅ Basique — faire une fois par occurrence</option>
+            <option value="repetitive" ${it.action_type==='repetitive'?'selected':''}>🔢 Répétitive — compteur (+1 à chaque fois)</option>
+          </select>
+          <p style="font-size:11px;color:var(--text3);margin-top:4px;">Ex basique : Shacharit · Ex répétitive : Birkat Hamazon</p>
+        </div>
+        <div>
+          <label class="fl">Fréquence *</label>
+          <select id="a_freq" class="inp">
+            <option value="daily" ${it.frequency==='daily'?'selected':''}>📅 Quotidienne</option>
+            <option value="weekly" ${it.frequency==='weekly'?'selected':''}>📆 Hebdomadaire</option>
+            <option value="monthly" ${it.frequency==='monthly'?'selected':''}>🗓 Mensuelle</option>
+            <option value="flexible" ${it.frequency==='flexible'?'selected':''}>🔄 Flexible (user choisit)</option>
+            <option value="ponctual" ${it.frequency==='ponctual'?'selected':''}>🎯 Ponctuelle (rare — ex: Mezouzot)</option>
+          </select>
+        </div>
+      </div>
+
+      <div><label class="fl">Moment de la journée</label>
+        <select id="a_timing" class="inp">
+          <option value="any_time" ${it.timing_moment==='any_time'?'selected':''}>🕐 N'importe quand</option>
+          <option value="morning" ${it.timing_moment==='morning'?'selected':''}>☀️ Matin</option>
+          <option value="afternoon" ${it.timing_moment==='afternoon'?'selected':''}>🌤️ Après-midi</option>
+          <option value="evening" ${it.timing_moment==='evening'?'selected':''}>🌙 Soir</option>
+        </select>
+      </div>
+
+      <!-- Options -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="msec" style="display:flex;align-items:center;gap:10px;">
+          <label class="toggle"><input type="checkbox" id="a_counter" ${it.has_counter?'checked':''}><span class="tslider"></span></label>
+          <div><p style="font-size:13px;color:var(--text);font-weight:500;">🔢 Compteur</p><p style="font-size:11px;color:var(--text3);">Répétition +1</p></div>
+        </div>
+        <div class="msec" style="display:flex;align-items:center;gap:10px;">
+          <label class="toggle"><input type="checkbox" id="a_engage" ${it.can_have_engagement?'checked':''}><span class="tslider"></span></label>
+          <div><p style="font-size:13px;color:var(--text);font-weight:500;">💪 Engagement possible</p><p style="font-size:11px;color:var(--text3);">L'user peut s'engager sur X jours</p></div>
+        </div>
+      </div>
+
+      <!-- Calendrier hébraïque -->
+      <div class="msec">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <label class="toggle"><input type="checkbox" id="a_cal" ${it.is_calendar_triggered?'checked':''} onchange="gi('a_calwrap').style.display=this.checked?'block':'none'"><span class="tslider"></span></label>
+          <div><p style="font-size:13px;color:var(--text);font-weight:500;">✡️ Déclenchée par une fête hébraïque</p><p style="font-size:11px;color:var(--text3);">Action visible automatiquement pendant la fête</p></div>
+        </div>
+        <div id="a_calwrap" style="display:${it.is_calendar_triggered?'block':'none'};">
+          <label class="fl">Événement / Fête</label>
+          <select id="a_calcode" class="inp">
+            <option value="">-- Sélectionne --</option>
+            ${['SHABBAT','ROSH_HASHANA','YOM_KIPPOUR','SOUCCOT','SIMHAT_TORAH','HANOUCCA','POURIM','PESSAH','SHAVOUOT','ROSH_HODESH','SEFIRA','TISHA_BAV','BIRKAT_HALEVANA'].map(e=>`<option value="${e}" ${it.calendar_event_code===e?'selected':''}>${e}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <!-- Zmanim -->
+      <div class="msec">
+        <p style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:4px;">🕐 Déclencheur Zman (horaire halakhique) — 🚧 À venir (non actif)</p>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:12px;">Réglage en préparation — pas encore actif.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div><label class="fl">Zman associé</label>
+            <select id="a_zman" class="inp" onchange="gi('a_zmanwrap').style.display=this.value?'block':'none'">
+              <option value="">-- Aucun --</option>
+              <option value="ALOT_HASHAHAR" ${it.zman_trigger==='ALOT_HASHAHAR'?'selected':''}>🌌 Alot HaShahar (aube astronomique)</option>
+              <option value="NETZ" ${it.zman_trigger==='NETZ'?'selected':''}>🌅 Netz HaHama (lever du soleil)</option>
+              <option value="SOF_KRIAT_SHEMA" ${it.zman_trigger==='SOF_KRIAT_SHEMA'?'selected':''}>⏰ Sof Zman Kriat Shema</option>
+              <option value="SOF_TEFILA" ${it.zman_trigger==='SOF_TEFILA'?'selected':''}>⏰ Sof Zman Tefila (Shacharit)</option>
+              <option value="HATZOT" ${it.zman_trigger==='HATZOT'?'selected':''}>☀️ Hatzot (midi halakhique)</option>
+              <option value="MINHA_GEDOLA" ${it.zman_trigger==='MINHA_GEDOLA'?'selected':''}>🌤️ Minha Gedola</option>
+              <option value="MINHA_KETANA" ${it.zman_trigger==='MINHA_KETANA'?'selected':''}>🌤️ Minha Ketana</option>
+              <option value="PLAG_HAMINHA" ${it.zman_trigger==='PLAG_HAMINHA'?'selected':''}>🌇 Plag HaMinha</option>
+              <option value="SHKIA" ${it.zman_trigger==='SHKIA'?'selected':''}>🌆 Shkia (coucher du soleil)</option>
+              <option value="TSEET_HAKOKAVIM" ${it.zman_trigger==='TSEET_HAKOKAVIM'?'selected':''}>🌙 Tsét HaKokavim (sortie des étoiles)</option>
+              <option value="HATZOT_LAILA" ${it.zman_trigger==='HATZOT_LAILA'?'selected':''}>🌃 Hatzot HaLaila (minuit halakhique)</option>
+              <option value="TIKOUN_HATZOT" ${it.zman_trigger==='TIKOUN_HATZOT'?'selected':''}>🌃 Tikoun Hatzot</option>
+            </select>
+          </div>
+          <div id="a_zmanwrap" style="display:${it.zman_trigger?'block':'none'};">
+            <label class="fl">Notifier combien de minutes avant ?</label>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input id="a_zman_before" type="number" class="inp" style="max-width:100px;" value="${h(it.zman_notif_minutes_before||15)}" min="5" max="60" step="5">
+              <span style="font-size:13px;color:var(--text2);">minutes avant le Zman</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DURÉE -->
+    <div id="tc-dur" style="display:none;flex-direction:column;gap:14px;">
+      <div class="msec">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <label class="toggle"><input type="checkbox" id="a_hasdur" ${it.has_duration?'checked':''} onchange="gi('durfields').style.display=this.checked?'flex':'none'"><span class="tslider"></span></label>
+          <div><p style="font-size:13px;color:var(--text);font-weight:500;">⏱ L'user peut saisir une durée</p><p style="font-size:11px;color:var(--text3);">Temps d'étude Torah, pratique d'une Mida, etc.</p></div>
+        </div>
+        <div id="durfields" style="display:${it.has_duration?'flex':'none'};flex-direction:column;gap:12px;">
+          <div><label class="fl">Unité de mesure</label>
+            <select id="a_unit" class="inp">
+              <option value="minutes" ${it.duration_unit==='minutes'?'selected':''}>⏱ Minutes</option>
+              <option value="fois" ${it.duration_unit==='fois'?'selected':''}>🔢 Fois (répétitions)</option>
+              <option value="pages" ${it.duration_unit==='pages'?'selected':''}>📄 Pages</option>
+              <option value="chapitres" ${it.duration_unit==='chapitres'?'selected':''}>📖 Chapitres</option>
+              <option value="montant" ${it.duration_unit==='montant'?'selected':''}>💰 Montant (₪ / €)</option>
+              <option value="autre" ${it.duration_unit==='autre'?'selected':''}>📝 Autre</option>
+            </select>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div><label class="fl">Durée suggérée</label><input id="a_dsug" type="number" class="inp" value="${h(it.duration_suggested_minutes)}" placeholder="20"></div>
+            <div><label class="fl">Minimum</label><input id="a_dmin" type="number" class="inp" value="${h(it.duration_min_minutes)}" placeholder="5"></div>
+            <div><label class="fl">Maximum</label><input id="a_dmax" type="number" class="inp" value="${h(it.duration_max_minutes)}" placeholder="120"></div>
+          </div>
+          <div class="info-box">💡 La durée suggérée = valeur par défaut. L'user peut la modifier entre Min et Max.</div>
+        </div>
+      </div>
+
+      <div class="msec">
+        <p style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:4px;">💪 Durée d'engagement suggérée</p>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:12px;">Si l'user active l'engagement sur cette action, quelle durée suggérer par défaut ?</p>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input id="a_engdays" type="number" class="inp" style="max-width:100px;" value="${h(it.engagement_suggested_days)}" placeholder="30">
+          <span style="font-size:13px;color:var(--text2);">jours</span>
+        </div>
+      </div>
+
+      <div class="msec">
+        <p style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:4px;">🕐 Heure préférée pour cette action</p>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:12px;">Suggérer à l'user de faire cette action à une heure précise (ex: étude Torah à 21h00)</p>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input id="a_preferred_time" type="time" class="inp" style="max-width:140px;" value="${h(it.preferred_time)}">
+          <span style="font-size:13px;color:var(--text2);">heure suggérée (optionnel)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFIL & ACCÈS -->
+    <div id="tc-acc" style="display:none;flex-direction:column;gap:14px;">
+      <!-- Filtrage profil -->
+      <div class="msec">
+        <p style="font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;">👤 Filtrage par profil utilisateur</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+          <div><label class="fl">Genre</label>
+            <select id="a_gender" class="inp">
+              <option value="tous" ${it.gender==='tous'?'selected':''}>👥 Tous</option>
+              <option value="homme" ${it.gender==='homme'?'selected':''}>👨 Homme seulement</option>
+              <option value="femme" ${it.gender==='femme'?'selected':''}>👩 Femme seulement</option>
+            </select>
+          </div>
+          <div><label class="fl">Statut marital</label>
+            <select id="a_statut" class="inp">
+              <option value="tous" ${it.status_marital==='tous'?'selected':''}>Tous</option>
+              <option value="marie" ${it.status_marital==='marie'?'selected':''}>💍 Marié(e)</option>
+              <option value="celibataire" ${it.status_marital==='celibataire'?'selected':''}>🙋 Célibataire</option>
+              <option value="divorce" ${it.status_marital==='divorce'?'selected':''}>Divorcé(e)</option>
+              <option value="veuf" ${it.status_marital==='veuf'?'selected':''}>Veuf/Veuve</option>
+            </select>
+          </div>
+          <div><label class="fl">Enfants</label>
+            <select id="a_children" class="inp">
+              <option value="tous" ${it.has_children==='tous'?'selected':''}>Tous</option>
+              <option value="oui" ${it.has_children==='oui'?'selected':''}>👶 Avec enfants</option>
+              <option value="non" ${it.has_children==='non'?'selected':''}>Sans enfants</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statut -->
+      <div class="msec">
+        <p style="font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;">✅ Statut</p>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div><p style="font-size:13px;color:var(--text);font-weight:500;">✅ Action active</p><p style="font-size:11px;color:var(--text3);margin-top:2px;">Visible dans l'app (décocher pour masquer sans supprimer)</p></div>
+            <label class="toggle"><input type="checkbox" id="a_actif" ${it.actif?'checked':''}><span class="tslider"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <button onclick="saveAct('${id||''}')" class="btn btn-gold" style="flex:1;justify-content:center;padding:11px;font-size:14px;">💾 ${id?'Enregistrer les modifications':'Créer l\'action'}</button>
+      <button onclick="closeModal()" class="btn btn-ghost">Annuler</button>
+    </div>
+  </div>`);
+}
+
+function aTab(t) {
+  ['gen','trad','conf','dur','acc'].forEach(x => {
+    gi(`t-${x}`).classList.toggle('active', x===t);
+    gi(`tc-${x}`).style.display = x===t ? 'flex' : 'none';
+  });
+}
+
+async function saveAct(id) {
+  const d={
+    code:v('a_code'), sous_category_id:CN.sc?.id||null,
+    title_fr:v('a_tfr'), title_he:v('a_the')||null, title_en:v('a_ten')||null,
+    description_fr:v('a_dfr')||null, description_he:v('a_dhe')||null, description_en:v('a_den')||null,
+    tips:v('a_tips')||null, tips_he:v('a_tips_he')||null, tips_en:v('a_tips_en')||null,
+    action_type:v('a_type'), frequency:v('a_freq'),
+    timing_moment:v('a_timing'), level:v('a_level'),
+    is_calendar_triggered:cb('a_cal'), calendar_event_code:v('a_calcode')||null,
+    zman_trigger:v('a_zman')||null, zman_notif_minutes_before:num('a_zman_before')||15,
+    has_counter:cb('a_counter'), can_have_engagement:cb('a_engage'),
+    has_duration:cb('a_hasdur'), duration_unit:v('a_unit')||'minutes',
+    duration_suggested_minutes:num('a_dsug'), duration_min_minutes:num('a_dmin'), duration_max_minutes:num('a_dmax'),
+    engagement_suggested_days:num('a_engdays'),
+preferred_time:v('a_preferred_time')||null,
+    gender:v('a_gender'), status_marital:v('a_statut'), has_children:v('a_children'),
+    is_free:false, actif:cb('a_actif'),
+    updated_at:new Date().toISOString()
+  };
+  if(!d.code||!d.title_fr){toast('Code et titre FR obligatoires','err');return;}
+  const{error}=id?await sb.from('predefined_actions').update(d).eq('id',id):await sb.from('predefined_actions').insert(d);
+  if(error){toast(error.message,'err');return;}
+  toast(id?'Action mise à jour !':'Action créée !'); closeModal(); renderL3();
+}
+
+// ── Étape ──
+async function openEtapeModal(id=null) {
+  let it={action_id:CN.action?.id||'',titre_fr:'',titre_he:'',titre_en:'',ordre:0,is_optional:false};
+  if(id){const{data}=await sb.from('predefined_sous_actions').select('*').eq('id',id).single();if(data)it=data;}
+  openModal(`<div style="padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:17px;font-weight:800;color:var(--text);">${id?'Modifier':'Nouvelle étape'}</h2>
+        <p style="font-size:12px;color:var(--text2);margin-top:2px;">${h(CN.action?.title_fr)}</p>
+      </div>
+      <button onclick="closeModal()" class="btn btn-ghost btn-icon">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div><label class="fl">Titre FR *</label><input id="e_fr" class="inp" value="${h(it.titre_fr)}" placeholder="ex: Réciter Birkot Hashahar"></div>
+      <div><label class="fl">Titre HE</label><input id="e_he" class="inp" value="${h(it.titre_he)}" dir="rtl"></div>
+      <div><label class="fl">Titre EN</label><input id="e_en" class="inp" value="${h(it.titre_en)}"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end;">
+        <div><label class="fl">Ordre d'affichage</label><input id="e_ordre" type="number" class="inp" value="${h(it.ordre)}"></div>
+        <div style="display:flex;align-items:center;gap:10px;padding-bottom:4px;">
+          <label class="toggle"><input type="checkbox" id="e_opt" ${it.is_optional?'checked':''}><span class="tslider"></span></label>
+          <span style="font-size:13px;color:var(--text2);">Étape optionnelle</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <button onclick="saveEtape('${id||''}')" class="btn btn-gold" style="flex:1;justify-content:center;padding:11px;">💾 ${id?'Enregistrer':'Créer l\'étape'}</button>
+      <button onclick="closeModal()" class="btn btn-ghost">Annuler</button>
+    </div>
+  </div>`);
+}
+async function saveEtape(id) {
+  const d={action_id:CN.action?.id||null,titre_fr:v('e_fr'),titre_he:v('e_he')||null,titre_en:v('e_en')||null,ordre:num('e_ordre')||0,is_optional:cb('e_opt')};
+  if(!d.titre_fr){toast('Titre FR obligatoire','err');return;}
+  const{error}=id?await sb.from('predefined_sous_actions').update(d).eq('id',id):await sb.from('predefined_sous_actions').insert(d);
+  if(error){toast(error.message,'err');return;}
+  toast(id?'Étape mise à jour !':'Étape créée !'); closeModal(); renderL4();
+}
+
+// ══════════════════════════════
+// DÉFIS
+// ══════════════════════════════
+async function renderDefis() {
+  load();
+  const{data}=await sb.from('defis').select('*').order('created_at',{ascending:false});
+  set(`<div style="padding:32px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div><h1 style="font-size:22px;font-weight:800;color:var(--text);">Défis & Scénarios</h1><p style="font-size:13px;color:var(--text2);margin-top:4px;">${data?.length||0} défis créés</p></div>
+      <button onclick="openDefiModal()" class="btn btn-gold">+ Nouveau défi</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      ${(data||[]).map(d=>`
+      <div class="action-item">
+        <div style="display:flex;align-items:flex-start;gap:14px;">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+              <h3 style="font-size:14px;font-weight:700;color:var(--text);">${h(d.titre_fr)}</h3>
+              ${d.titre_he?`<span style="font-size:12px;color:var(--text2);direction:rtl;">${h(d.titre_he)}</span>`:''}
+            </div>
+            ${d.description_fr?`<p style="font-size:12px;color:var(--text2);margin-bottom:8px;">${h(d.description_fr.substring(0,100))}...</p>`:''}
+            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+              <span class="badge b-gold">${h(d.mida_code)||'Sans mida'}</span>
+              ${bDiff(d.difficulte)}
+              ${d.is_daily?'<span class="badge b-green">⭐ Défi du jour</span>':''}
+              ${!d.is_active?'<span class="badge b-red">Inactif</span>':''}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button onclick="openDefiModal('${d.id}')" class="btn btn-blue btn-sm">✏️</button>
+            <button onclick="del('defis','${d.id}','renderDefis')" class="btn btn-red btn-sm">✕</button>
+          </div>
+        </div>
+      </div>`).join('')}
+      ${!(data?.length)?`<div class="card" style="padding:48px;text-align:center;"><div style="font-size:36px;margin-bottom:12px;">⭐</div><p style="color:var(--text2);">Aucun défi créé</p></div>`:''}
+    </div>
+  </div>`);
+}
+
+async function openDefiModal(id=null) {
+  let it={titre_fr:'',titre_he:'',titre_en:'',description_fr:'',description_he:'',description_en:'',mida_code:'',difficulte:'facile',is_daily:false,is_active:true};
+  if(id){const{data}=await sb.from('defis').select('*').eq('id',id).single();if(data)it=data;}
+  openModal(`<div style="padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h2 style="font-size:17px;font-weight:800;color:var(--text);">${id?'Modifier le défi':'Nouveau défi'}</h2>
+      <button onclick="closeModal()" class="btn btn-ghost btn-icon">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label class="fl">Mida associée</label>
+          <select id="d_mida" class="inp"><option value="">-- Sans mida --</option>
+            ${['savlanut','simcha','ahava','yirah','emet','anavah','hakarat_hatov','chesed','shmirat_halashon','bitahon','tsniout','zerizout'].map(m=>`<option value="${m}" ${it.mida_code===m?'selected':''}>${m}</option>`).join('')}
+          </select>
+        </div>
+        <div><label class="fl">Difficulté</label>
+          <select id="d_diff" class="inp">
+            <option value="facile" ${it.difficulte==='facile'?'selected':''}>😊 Facile</option>
+            <option value="moyen" ${it.difficulte==='moyen'?'selected':''}>💪 Moyen</option>
+            <option value="difficile" ${it.difficulte==='difficile'?'selected':''}>🔥 Difficile</option>
+          </select>
+        </div>
+      </div>
+      <div><label class="fl">Titre FR *</label><input id="d_fr" class="inp" value="${h(it.titre_fr)}" placeholder="Ne pas se mettre en colère dans une file d'attente"></div>
+      <div><label class="fl">Description FR</label><textarea id="d_dfr" class="inp" rows="3">${h(it.description_fr)}</textarea></div>
+      <div class="msec">
+        <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--gold);margin-bottom:12px;">🇮🇱 Hébreu</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <input id="d_he" class="inp" value="${h(it.titre_he)}" dir="rtl" placeholder="כותרת">
+          <textarea id="d_dhe" class="inp" rows="2" dir="rtl">${h(it.description_he)}</textarea>
+        </div>
+      </div>
+      <div class="msec">
+        <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--blue);margin-bottom:12px;">🇬🇧 Anglais</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <input id="d_en" class="inp" value="${h(it.titre_en)}" placeholder="English title">
+          <textarea id="d_den" class="inp" rows="2">${h(it.description_en)}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:20px;">
+        <div style="display:flex;align-items:center;gap:10px;"><label class="toggle"><input type="checkbox" id="d_daily" ${it.is_daily?'checked':''}><span class="tslider"></span></label><span style="font-size:13px;color:var(--text2);">Peut être défi du jour</span></div>
+        <div style="display:flex;align-items:center;gap:10px;"><label class="toggle"><input type="checkbox" id="d_active" ${it.is_active?'checked':''}><span class="tslider"></span></label><span style="font-size:13px;color:var(--text2);">Actif</span></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <button onclick="saveDefi('${id||''}')" class="btn btn-gold" style="flex:1;justify-content:center;padding:11px;">💾 ${id?'Enregistrer':'Créer le défi'}</button>
+      <button onclick="closeModal()" class="btn btn-ghost">Annuler</button>
+    </div>
+  </div>`);
+}
+async function saveDefi(id) {
+  const d={titre_fr:v('d_fr'),titre_he:v('d_he')||null,titre_en:v('d_en')||null,description_fr:v('d_dfr')||null,description_he:v('d_dhe')||null,description_en:v('d_den')||null,mida_code:v('d_mida')||null,difficulte:v('d_diff'),is_daily:cb('d_daily'),is_active:cb('d_active')};
+  if(!d.titre_fr){toast('Titre FR obligatoire','err');return;}
+  const{error}=id?await sb.from('defis').update(d).eq('id',id):await sb.from('defis').insert(d);
+  if(error){toast(error.message,'err');return;}
+  toast(id?'Défi mis à jour !':'Défi créé !'); closeModal(); renderDefis();
+}
+
+// ══════════════════════════════
+// UTILISATEURS
+// ══════════════════════════════
+// ─── State pour les filtres ───
+let usersData = [];
+let categoriesData = [];
+let userFilter = 'all';        // 'all' | 'onboarded' | 'pending' | 'premium' | 'free'
+let userSearch = '';
+let userSortKey = 'actions_completed';   // tri par défaut = classement par engagement
+let userSortDir = 'desc';
+
+async function renderUsers() {
+  load();
+
+  // 1) Charger les users
+  const { data: users } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+  usersData = users || [];
+
+  // 2) Charger les catégories (pour traduire les UUIDs d'interest_categories)
+  const { data: cats } = await sb.from('categories').select('id, nom_fr, icone, couleur');
+  categoriesData = cats || [];
+
+  // 3) Charger les counts user_actions (1 requête groupée)
+  const counts = {};
+  const { data: ua } = await sb.from('user_actions').select('user_id');
+  if (ua) ua.forEach(row => { counts[row.user_id] = (counts[row.user_id] || 0) + 1; });
+
+  // Stocker les counts pour la modal
+  window.__userActionCounts = counts;
+
+  // 4) Stats d'engagement (vue user_engagement_stats — lecture admin, RLS validées)
+  const engMap = {};
+  try {
+    const { data: eng } = await sb.from('user_engagement_stats').select('*');
+    (eng || []).forEach(e => { engMap[e.user_id] = e; });
+  } catch (_) { /* fallback : map vide → colonnes 0 / — sans planter la page */ }
+  window.__userEngagement = engMap;
+
+  renderUsersTable();
+}
+
+function renderUsersTable() {
+  const counts = window.__userActionCounts || {};
+  const eng = window.__userEngagement || {};
+
+  // Application des filtres + recherche
+  let filtered = usersData;
+
+  if (userFilter === 'onboarded') filtered = filtered.filter(u => u.onboarding_completed);
+  else if (userFilter === 'pending') filtered = filtered.filter(u => !u.onboarding_completed);
+  else if (userFilter === 'premium') filtered = filtered.filter(u => u.is_premium);
+  else if (userFilter === 'free') filtered = filtered.filter(u => !u.is_premium);
+
+  if (userSearch.trim()) {
+    const q = userSearch.toLowerCase().trim();
+    filtered = filtered.filter(u =>
+      (u.name || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q) ||
+      (u.city || '').toLowerCase().includes(q)
+    );
+  }
+
+  // Tri par engagement (après filtres + recherche) — défaut : actions complétées décroissant
+  const sortVal = (u) => {
+    const e = eng[u.id] || {};
+    if (userSortKey === 'last_activity') return e.last_activity ? new Date(e.last_activity).getTime() : 0;
+    return Number(e[userSortKey] || 0);
+  };
+  filtered = [...filtered].sort((a, b) => userSortDir === 'desc' ? sortVal(b) - sortVal(a) : sortVal(a) - sortVal(b));
+
+  // Stats par filtre
+  const total = usersData.length;
+  const nbOnboarded = usersData.filter(u => u.onboarding_completed).length;
+  const nbPending = total - nbOnboarded;
+  const nbPremium = usersData.filter(u => u.is_premium).length;
+  const nbFree = total - nbPremium;
+
+  const sortArrow = (key) => userSortKey === key ? (userSortDir === 'desc' ? ' ▼' : ' ▲') : '';
+  const sortTh = (key, label) => `<th class="th" onclick="setUserSort('${key}')" style="cursor:pointer;user-select:none;text-align:center;" title="Trier">${label}${sortArrow(key)}</th>`;
+  const filterBtn = (key, label, count, color) => `
+    <button onclick="setUserFilter('${key}')" class="btn btn-sm" style="
+      border:1px solid ${userFilter === key ? color : 'rgba(160,160,160,0.2)'};
+      color:${userFilter === key ? color : 'var(--text2)'};
+      background:${userFilter === key ? color + '15' : 'transparent'};
+      font-weight:${userFilter === key ? '600' : '500'};
+    ">${label} <span style="opacity:0.7;margin-left:4px;">${count}</span></button>
+  `;
+
+  set(`<div style="padding:32px;">
+
+    <!-- HEADER -->
+    <div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:22px;font-weight:800;color:var(--text);">Utilisateurs</h1>
+        <p style="font-size:13px;color:var(--text2);margin-top:4px;">${filtered.length} affiché${filtered.length > 1 ? 's' : ''} sur ${total} inscrits</p>
+      </div>
+      <div style="font-size:11px;color:var(--text3);background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);padding:6px 12px;border-radius:6px;">
+        🛠️ Mode dev : actions de test disponibles
+      </div>
+    </div>
+
+    <!-- BARRE DE RECHERCHE + FILTRES -->
+    <div class="card" style="padding:14px;margin-bottom:16px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input
+          id="userSearchInput"
+          type="text"
+          placeholder="🔍 Rechercher un utilisateur (nom, email, ville)..."
+          value="${h(userSearch)}"
+          oninput="onUserSearchInput(this.value)"
+          class="inp"
+          style="flex:1;padding:9px 12px;font-size:13px;"
+        />
+        ${userSearch ? `<button onclick="onUserSearchInput('')" class="btn btn-sm" style="border:1px solid rgba(160,160,160,0.2);color:var(--text2);">✕ Effacer</button>` : ''}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${filterBtn('all', 'Tous', total, 'var(--gold)')}
+        ${filterBtn('onboarded', '✓ Onboarding fini', nbOnboarded, 'rgb(34,197,94)')}
+        ${filterBtn('pending', '⏳ En cours', nbPending, 'rgb(251,146,60)')}
+        ${filterBtn('premium', '✨ Premium', nbPremium, 'var(--gold)')}
+        ${filterBtn('free', 'Gratuit', nbFree, 'rgb(160,160,160)')}
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card" style="overflow:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th class="th">Utilisateur</th>
+            <th class="th">Onboarding</th>
+            <th class="th">Niveau</th>
+            <th class="th" style="text-align:center;">Actions adoptées</th>
+            ${sortTh('actions_completed','Actions complétées')}
+            ${sortTh('defis_completed','Défis complétés')}
+            ${sortTh('active_days','Jours actifs')}
+            ${sortTh('last_activity','Dernière activité')}
+            <th class="th">Premium</th>
+            <th class="th">Inscrit</th>
+            <th class="th" style="min-width:200px;">Outils</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.map(u => {
+            const nbActions = counts[u.id] || 0;
+            return `
+          <tr class="trow">
+            <td class="td">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:34px;height:34px;border-radius:10px;background:var(--gold-dim);border:1px solid rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0;">${(u.name || u.email || '?')[0].toUpperCase()}</div>
+                <div>
+                  <p style="font-size:13px;font-weight:600;color:var(--text);">${h(u.name) || 'Sans nom'}</p>
+                  <p style="font-size:11px;color:var(--text2);">${h(u.email)}</p>
+                  <p style="font-size:10px;color:var(--text3);">${u.is_admin ? '👑 Admin · ' : ''}Langue : ${h(u.language || 'fr')}</p>
+                </div>
+              </div>
+            </td>
+            <td class="td">
+              ${u.onboarding_completed
+                ? `<span class="badge b-green">✓ Terminé</span>`
+                : `<span class="badge b-gray">Step ${u.onboarding_step || 1}/4</span>`}
+            </td>
+            <td class="td">${bLevel(u.niveau)}</td>
+            <td class="td" style="text-align:center;">
+              <span style="display:inline-block;min-width:32px;padding:3px 8px;border-radius:6px;background:${nbActions > 0 ? 'rgba(34,197,94,0.1)' : 'rgba(160,160,160,0.1)'};border:1px solid ${nbActions > 0 ? 'rgba(34,197,94,0.3)' : 'rgba(160,160,160,0.2)'};color:${nbActions > 0 ? 'var(--green)' : 'var(--text3)'};font-size:12px;font-weight:600;">${nbActions}</span>
+            </td>
+            <td class="td" style="text-align:center;font-size:12px;color:var(--text);">${(eng[u.id]?.actions_completed) || 0}</td>
+            <td class="td" style="text-align:center;font-size:12px;color:var(--text);">${(eng[u.id]?.defis_completed) || 0}</td>
+            <td class="td" style="text-align:center;font-size:12px;color:var(--text);">${(eng[u.id]?.active_days) || 0}</td>
+            <td class="td" style="text-align:center;font-size:12px;color:var(--text2);">${eng[u.id]?.last_activity ? new Date(eng[u.id].last_activity).toLocaleDateString('fr-FR') : '—'}</td>
+            <td class="td">
+              <button onclick="togglePremium('${u.id}',${u.is_premium})" class="btn btn-sm" style="border:1px solid ${u.is_premium ? 'rgba(239,68,68,0.3)' : 'rgba(201,168,76,0.3)'};color:${u.is_premium ? 'var(--red)' : 'var(--gold)'};background:${u.is_premium ? 'rgba(239,68,68,0.08)' : 'rgba(201,168,76,0.08)'};">
+                ${u.is_premium ? '✨ Premium ↓' : 'Gratuit ↑'}
+              </button>
+            </td>
+            <td class="td" style="font-size:12px;color:var(--text2);">${u.created_at ? new Date(u.created_at).toLocaleDateString('fr-FR') : '-'}</td>
+            <td class="td">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button onclick="showUserDetails('${u.id}')" class="btn btn-sm" style="border:1px solid rgba(74,144,217,0.3);color:#4A90D9;background:rgba(74,144,217,0.08);font-size:11px;" title="Voir toutes les infos">
+                  👁️ Détails
+                </button>
+                <button onclick="resetOnboarding('${u.id}','${esc(u.name || 'cet user')}')" class="btn btn-sm" style="border:1px solid rgba(139,92,246,0.3);color:#A78BFA;background:rgba(139,92,246,0.08);font-size:11px;" title="Repasse onboarding_completed=false">
+                  🔄 Reset
+                </button>
+                ${nbActions > 0 ? `
+                <button onclick="clearUserActions('${u.id}','${esc(u.name || 'cet user')}',${nbActions})" class="btn btn-sm" style="border:1px solid rgba(239,68,68,0.3);color:var(--red);background:rgba(239,68,68,0.08);font-size:11px;" title="Supprime toutes les user_actions">
+                  🗑️ Vider (${nbActions})
+                </button>` : ''}
+              </div>
+            </td>
+          </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      ${!filtered.length ? `<div style="padding:48px;text-align:center;"><div style="font-size:36px;margin-bottom:12px;">${userSearch || userFilter !== 'all' ? '🔍' : '👥'}</div><p style="color:var(--text2);">${userSearch || userFilter !== 'all' ? 'Aucun résultat avec ces filtres' : 'Aucun utilisateur'}</p></div>` : ''}
+    </div>
+  </div>`);
+
+  // Restaure le focus dans l'input de recherche après re-render
+  setTimeout(() => {
+    const input = document.getElementById('userSearchInput');
+    if (input && document.activeElement !== input && userSearch) {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+  }, 0);
+}
+
+function setUserFilter(key) {
+  userFilter = key;
+  renderUsersTable();
+}
+
+function setUserSort(key) {
+  if (userSortKey === key) userSortDir = userSortDir === 'desc' ? 'asc' : 'desc';
+  else { userSortKey = key; userSortDir = 'desc'; }
+  renderUsersTable();
+}
+
+let searchDebounce = null;
+function onUserSearchInput(value) {
+  userSearch = value;
+  if (searchDebounce) clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => renderUsersTable(), 150);
+}
+
+// ─── Modal "Voir détails" ───
+async function showUserDetails(uid) {
+  const u = usersData.find(x => x.id === uid);
+  if (!u) { toast('Utilisateur introuvable', 'err'); return; }
+
+  const nbActions = (window.__userActionCounts || {})[uid] || 0;
+
+  // Charger les tokens push et les notes calendrier en parallèle
+  const [pushRes, notesRes, notesCountRes] = await Promise.all([
+    sb.from('user_push_tokens').select('platform,enabled,last_used_at,expo_push_token').eq('user_id', uid),
+    sb.from('user_calendar_notes').select('date,title').eq('user_id', uid).order('date', { ascending: false }).limit(5),
+    sb.from('user_calendar_notes').select('id', { count: 'exact', head: true }).eq('user_id', uid),
+  ]);
+  const pushTokens = pushRes.data || [];
+  const calNotes   = notesRes.data || [];
+  const calTotal   = notesCountRes.count ?? 0;
+
+  // Traduire les interest_categories (UUIDs → noms)
+  const interestList = Array.isArray(u.interest_categories) && u.interest_categories.length > 0
+    ? u.interest_categories.map(catId => {
+        const cat = categoriesData.find(c => c.id === catId);
+        return cat
+          ? `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;background:${cat.couleur}15;border:1px solid ${cat.couleur}40;color:${cat.couleur};font-size:11px;font-weight:600;margin:2px 4px 2px 0;">${h(cat.nom_fr)}</span>`
+          : `<span style="font-size:11px;color:var(--text3);">${catId.slice(0, 8)}…</span>`;
+      }).join('')
+    : '<span style="font-size:11px;color:var(--text3);font-style:italic;">Aucune catégorie sélectionnée</span>';
+
+  const row = (label, value, color) => `
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(160,160,160,0.1);">
+      <span style="font-size:12px;color:var(--text2);">${label}</span>
+      <span style="font-size:12px;color:${color || 'var(--text)'};font-weight:500;text-align:right;">${value}</span>
+    </div>
+  `;
+
+  const section = (title, content) => `
+    <div style="margin-bottom:18px;">
+      <h3 style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">${title}</h3>
+      <div>${content}</div>
+    </div>
+  `;
+
+  // ─── Bloc 📱 Notifications push ───
+  const rlsNote = `<span style="font-size:10px;color:var(--text3);display:block;margin-top:4px;">(ou policy RLS admin non appliquée — migrations 20260612*)</span>`;
+  const pushSection = pushTokens.length > 0
+    ? pushTokens.map(t => `
+        <div style="display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:8px;background:rgba(160,160,160,0.06);border:1px solid rgba(160,160,160,0.1);margin-bottom:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;font-weight:600;color:var(--text);">${h(t.platform || 'inconnu')}</span>
+            ${t.enabled
+              ? '<span style="font-size:11px;color:var(--green);font-weight:600;">● Actif</span>'
+              : '<span style="font-size:11px;color:var(--text3);font-weight:600;">● Désactivé</span>'}
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:11px;color:var(--text3);">Token</span>
+            <span style="font-family:monospace;font-size:10px;color:var(--text2);">${h((t.expo_push_token || '').slice(0, 12))}…</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:11px;color:var(--text3);">Dernier usage</span>
+            <span style="font-size:11px;color:var(--text2);">${t.last_used_at ? new Date(t.last_used_at).toLocaleString('fr-FR') : '—'}</span>
+          </div>
+        </div>`).join('')
+    : `<span style="font-size:12px;color:var(--text3);font-style:italic;">Aucun token push enregistré</span>${rlsNote}`;
+
+  // ─── Bloc 🗓️ Notes calendrier ───
+  const calSection = calNotes.length > 0
+    ? `${row('Total notes', String(calTotal))}` +
+      calNotes.map(n => `
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(160,160,160,0.07);">
+          <span style="font-size:11px;color:var(--text3);flex-shrink:0;margin-right:10px;">${h(n.date ? new Date(n.date).toLocaleDateString('fr-FR') : '—')}</span>
+          <span style="font-size:12px;color:var(--text);text-align:right;">${h(n.title)}</span>
+        </div>`).join('')
+    : `<span style="font-size:12px;color:var(--text3);font-style:italic;">Aucune note calendrier</span>${rlsNote}`;
+
+  const html = `
+    <div onclick="event.stopPropagation()" style="background:var(--bg2);border:1px solid rgba(160,160,160,0.15);border-radius:14px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;padding:0;">
+
+      <!-- Header sticky -->
+      <div style="position:sticky;top:0;background:var(--bg2);border-bottom:1px solid rgba(160,160,160,0.1);padding:18px 22px;display:flex;align-items:center;gap:14px;z-index:1;">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--gold-dim);border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--gold);flex-shrink:0;">${(u.name || u.email || '?')[0].toUpperCase()}</div>
+        <div style="flex:1;">
+          <h2 style="font-size:17px;font-weight:700;color:var(--text);">${h(u.name) || 'Sans nom'}${u.is_admin ? ' <span style="font-size:11px;color:var(--gold);">👑</span>' : ''}</h2>
+          <p style="font-size:12px;color:var(--text2);margin-top:1px;">${h(u.email)}</p>
+        </div>
+        <button onclick="closeOverlay()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:20px;padding:4px;">✕</button>
+      </div>
+
+      <!-- Body -->
+      <div style="padding:22px;">
+
+        ${section('🎯 Onboarding', `
+          ${row('Statut', u.onboarding_completed ? '<span style="color:var(--green);">✓ Terminé</span>' : `<span style="color:rgb(251,146,60);">⏳ Step ${u.onboarding_step || 1}/4</span>`)}
+          ${u.onboarding_completed_at ? row('Terminé le', new Date(u.onboarding_completed_at).toLocaleString('fr-FR')) : ''}
+          <div style="padding:8px 0;">
+            <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Catégories d'intérêt (Step 3)</div>
+            <div>${interestList}</div>
+          </div>
+        `)}
+
+        ${section('👤 Profil personnel', `
+          ${row('Genre', h(u.genre) || '<span style="color:var(--text3);">non renseigné</span>')}
+          ${row('Statut marital', h(u.statut_marital) || '<span style="color:var(--text3);">non renseigné</span>')}
+          ${row('Enfants', u.has_children === true ? `Oui (${h(u.nb_enfants || 0)})` : u.has_children === false ? 'Non' : '<span style="color:var(--text3);">non renseigné</span>')}
+          ${row('Niveau de pratique', h(u.niveau || 'essentiel'))}
+        `)}
+
+        ${section('📍 Localisation', `
+          ${row('Ville', h(u.city) || '<span style="color:var(--text3);">non renseignée</span>')}
+          ${(u.latitude && u.longitude)
+            ? row('Coordonnées GPS', `<span style="font-family:monospace;font-size:11px;">${u.latitude.toFixed(4)}, ${u.longitude.toFixed(4)}</span>`)
+            : row('Coordonnées GPS', '<span style="color:var(--text3);">non disponible</span>')}
+        `)}
+
+        ${section('🔔 Notifications', `
+          ${row('Activées', u.notif_enabled ? '<span style="color:var(--green);">✓ Oui</span>' : '<span style="color:var(--text3);">Désactivées</span>')}
+          ${u.notif_enabled ? row('Heure de rappel', `${String(u.notif_hour ?? 7).padStart(2, '0')}:${String(u.notif_minute ?? 0).padStart(2, '0')}`) : ''}
+        `)}
+
+        ${section('💎 Abonnement', `
+          ${row('Plan', u.is_premium ? '<span style="color:var(--gold);">✨ Premium</span>' : 'Gratuit')}
+          ${u.is_premium && u.premium_expires_at ? row('Expire le', new Date(u.premium_expires_at).toLocaleDateString('fr-FR')) : ''}
+        `)}
+
+        ${section('📊 Statistiques', `
+          ${row('Actions actives', `<span style="color:${nbActions > 0 ? 'var(--green)' : 'var(--text3)'};font-weight:600;">${nbActions}</span>`)}
+          ${row('Inscrit le', u.created_at ? new Date(u.created_at).toLocaleDateString('fr-FR') : '-')}
+          ${u.updated_at ? row('Dernière mise à jour', new Date(u.updated_at).toLocaleString('fr-FR')) : ''}
+        `)}
+
+        ${section('🔧 Technique', `
+          ${row('User ID', `<span style="font-family:monospace;font-size:10px;color:var(--text3);">${u.id.slice(0, 8)}…${u.id.slice(-4)}</span>`)}
+          ${row('Langue', h(u.language || 'fr'))}
+        `)}
+
+        ${section('📱 Notifications push', pushSection)}
+
+        ${section('🗓️ Notes calendrier', calSection)}
+
+        <!-- Zone danger : suppression RGPD -->
+        <div style="margin-top:8px;padding-top:18px;border-top:1px solid rgba(239,68,68,0.2);">
+          <h3 style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--red);margin-bottom:8px;">⚠️ Zone danger</h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">Supprime définitivement ce compte et toutes ses données (RGPD). Action irréversible.</p>
+          <button onclick="confirmDeleteAccount('${esc(u.id)}')" class="btn btn-sm" style="width:100%;border:1px solid rgba(239,68,68,0.4);color:#fff;background:var(--red);font-size:13px;font-weight:700;padding:10px;border-radius:8px;cursor:pointer;">
+            🗑️ Supprimer ce compte (RGPD)
+          </button>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  showOverlay(html);
+}
+
+// ─── Suppression complète de compte (RGPD) — double confirmation ───
+function confirmDeleteAccount(uid) {
+  const u = usersData.find(x => x.id === uid);
+  if (!u) { toast('Utilisateur introuvable', 'err'); return; }
+
+  const html = `
+    <div onclick="event.stopPropagation()" style="background:var(--bg2);border:1px solid rgba(239,68,68,0.3);border-radius:14px;max-width:460px;width:100%;padding:24px;">
+      <h2 style="font-size:17px;font-weight:800;color:var(--red);margin-bottom:8px;">🗑️ Suppression irréversible</h2>
+      <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px;">
+        Vous êtes sur le point de supprimer <strong style="color:var(--text);">définitivement</strong> le compte de :
+      </p>
+      <div style="background:var(--bg);border:1px solid rgba(160,160,160,0.15);border-radius:10px;padding:12px 14px;margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">${h(u.name) || 'Sans nom'}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px;">${h(u.email)}</div>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:8px;">
+        Toutes ses données (bilans, actions, progression…) seront effacées. Pour confirmer, tapez exactement <strong style="color:var(--red);">SUPPRIMER</strong> ci-dessous :
+      </p>
+      <input id="delConfirmInput" type="text" autocomplete="off" oninput="onDelConfirmInput()"
+        placeholder="SUPPRIMER"
+        style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid rgba(160,160,160,0.25);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px;font-weight:600;letter-spacing:1px;margin-bottom:16px;" />
+      <div style="display:flex;gap:10px;">
+        <button onclick="showUserDetails('${esc(uid)}')" class="btn btn-sm" style="flex:1;border:1px solid rgba(160,160,160,0.25);color:var(--text2);background:transparent;font-size:13px;padding:10px;border-radius:8px;cursor:pointer;">
+          Annuler
+        </button>
+        <button id="delConfirmBtn" onclick="doDeleteAccount('${esc(uid)}')" disabled class="btn btn-sm" style="flex:1;border:1px solid rgba(239,68,68,0.4);color:#fff;background:var(--red);font-size:13px;font-weight:700;padding:10px;border-radius:8px;cursor:not-allowed;opacity:0.5;">
+          Supprimer définitivement
+        </button>
+      </div>
+    </div>
+  `;
+  showOverlay(html);
+  setTimeout(() => { const i = gi('delConfirmInput'); if (i) i.focus(); }, 50);
+}
+
+function onDelConfirmInput() {
+  const input = gi('delConfirmInput');
+  const btn = gi('delConfirmBtn');
+  if (!input || !btn) return;
+  const ok = input.value === 'SUPPRIMER';
+  btn.disabled = !ok;
+  btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+  btn.style.opacity = ok ? '1' : '0.5';
+}
+
+async function doDeleteAccount(uid) {
+  const btn = gi('delConfirmBtn');
+  const input = gi('delConfirmInput');
+  if (!input || input.value !== 'SUPPRIMER') return;
+  if (btn) {
+    btn.disabled = true;
+    btn.style.cursor = 'not-allowed';
+    btn.style.opacity = '0.6';
+    btn.textContent = 'Suppression…';
+  }
+
+  const { data, error } = await sb.functions.invoke('delete-user-data', { body: { target_user_id: uid } });
+
+  if (error) {
+    let msg = error.message || 'Échec de la suppression';
+    // Tenter d'extraire le message JSON renvoyé par l'edge function
+    try { if (error.context && typeof error.context.json === 'function') { const j = await error.context.json(); if (j?.error) msg = j.error; } } catch {}
+    toast(msg, 'err');
+    if (btn) {
+      btn.disabled = false;
+      btn.style.cursor = 'pointer';
+      btn.style.opacity = '1';
+      btn.textContent = 'Supprimer définitivement';
+    }
+    return;
+  }
+
+  toast('Compte supprimé définitivement');
+  closeOverlay();
+  renderUsers();
+}
+
+// ─── Helpers overlay (détail user / RGPD) : rendent dans le #modal PARTAGÉ ───
+// Le contenu est une carte autoportée → #modal passe en mode « modal-plain »
+// (display:contents) pour ne pas ajouter de double cadre et rester centré comme
+// avant. On ne touche JAMAIS #overlay.innerHTML (sinon on détruit #modal et les
+// modals catalogue cassent au 2e clic). overlayClick est défini une seule fois
+// plus haut — pas de redéfinition ici.
+function showOverlay(html) { const m = gModal(); m.className = 'modal-plain'; m.innerHTML = html; gi('overlay').style.display = 'flex'; }
+function closeOverlay() { closeModal(); }
+
+// ─── Actions ───
+async function togglePremium(uid, cur) {
+  const { error } = await sb.from('profiles').update({ is_premium: !cur }).eq('id', uid);
+  if (error) { toast(error.message, 'err'); return; }
+  toast(!cur ? 'Premium activé !' : 'Premium retiré');
+  renderUsers();
+}
+
+async function resetOnboarding(uid, name) {
+  if (!confirm(`Réinitialiser l'onboarding de ${name} ?\n\nIl devra refaire les 4 étapes à sa prochaine connexion.`)) return;
+  const { error } = await sb.from('profiles').update({
+    onboarding_completed: false,
+    onboarding_step: 1,
+    onboarding_completed_at: null,
+    interest_categories: []
+  }).eq('id', uid);
+  if (error) { toast(error.message, 'err'); return; }
+  toast(`Onboarding de ${name} réinitialisé`);
+  renderUsers();
+}
+
+async function clearUserActions(uid, name, nb) {
+  if (!confirm(`Supprimer les ${nb} actions de ${name} ?\n\nUtile pour tester l'empty state du dashboard.`)) return;
+  const { error } = await sb.from('user_actions').delete().eq('user_id', uid);
+  if (error) { toast(error.message, 'err'); return; }
+  toast(`${nb} actions supprimées`);
+  renderUsers();
+}
+
+// ══════════════════════════════
+// BILAN IA
+// ══════════════════════════════
+let _bilanFilter = 'all';
+
+async function renderBilanIA() {
+  load();
+  const now = new Date();
+  const todayISO = now.toISOString().split('T')[0];
+  const weekAgo  = new Date(now); weekAgo.setDate(now.getDate() - 7);
+  const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth() - 1);
+
+  const [todayRows, weekRows, monthRows, killSw, topRaw, logsRaw] = await Promise.all([
+    sb.from('bilan_ia_audit').select('status,input_tokens,output_tokens,cost_estimate_usd').gte('generated_at', todayISO),
+    sb.from('bilan_ia_audit').select('status,input_tokens,output_tokens,cost_estimate_usd').gte('generated_at', weekAgo.toISOString()),
+    sb.from('bilan_ia_audit').select('status,input_tokens,output_tokens,cost_estimate_usd').gte('generated_at', monthAgo.toISOString()),
+    sb.from('app_settings').select('value').eq('key','bilan_ia_enabled').maybeSingle(),
+    sb.from('bilan_ia_audit').select('user_id,status').gte('generated_at', monthAgo.toISOString()),
+    (async () => {
+      let q = sb.from('bilan_ia_audit').select('generated_at,user_id,status,input_tokens,output_tokens,cost_estimate_usd,error_code').order('generated_at',{ascending:false}).limit(50);
+      if (_bilanFilter !== 'all') q = q.eq('status', _bilanFilter);
+      return q;
+    })(),
+  ]);
+
+  function stats(rows) {
+    const r = rows.data || [];
+    return {
+      ok:    r.filter(x => x.status === 'success').length,
+      safe:  r.filter(x => x.status === 'blocked_safety').length,
+      other: r.filter(x => !['success','blocked_safety'].includes(x.status)).length,
+      ti:    r.reduce((a,x) => a+(x.input_tokens||0),0),
+      to:    r.reduce((a,x) => a+(x.output_tokens||0),0),
+      cost:  r.reduce((a,x) => a+(Number(x.cost_estimate_usd)||0),0),
+      n:     r.length,
+    };
+  }
+  const sd = stats(todayRows), sw = stats(weekRows), sm = stats(monthRows);
+  const iaOn = killSw.data?.value === 'true';
+  const costAlert   = sm.cost > 50;
+  const safetyPct   = sm.n > 0 ? sm.safe / sm.n * 100 : 0;
+  const safetyAlert = safetyPct > 5;
+
+  // Top users
+  const cnt = {}; (topRaw.data||[]).forEach(r => { cnt[r.user_id] = (cnt[r.user_id]||0)+1; });
+  const topList = Object.entries(cnt).sort((a,b) => b[1]-a[1]).slice(0,10);
+  const topIds = topList.map(([uid]) => uid);
+  const { data: topProfiles } = topIds.length ? await sb.from('profiles').select('id,email').in('id', topIds) : { data: [] };
+  const topEmailMap = {}; (topProfiles||[]).forEach(p => { topEmailMap[p.id] = p.email||''; });
+
+  // Logs user emails
+  const logUserIds = [...new Set((logsRaw.data||[]).map(r => r.user_id))];
+  const { data: logProfiles } = logUserIds.length ? await sb.from('profiles').select('id,email').in('id', logUserIds) : { data: [] };
+  const logEmailMap = {}; (logProfiles||[]).forEach(p => { logEmailMap[p.id] = p.email||''; });
+
+  function maskEmail(e) { return h(e ? e.replace(/(.{2}).+(@.+)/, '$1***$2') : '—'); }
+  function statRow(label, s) {
+    return `<tr>
+      <td class="td" style="font-weight:600">${h(label)}</td>
+      <td class="td" style="text-align:center">${s.ok}</td>
+      <td class="td" style="text-align:center"><span class="badge b-red">${s.safe}</span></td>
+      <td class="td" style="text-align:center">${s.other}</td>
+      <td class="td" style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px">${(s.ti/1000).toFixed(1)}k / ${(s.to/1000).toFixed(1)}k</td>
+      <td class="td" style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px">$${s.cost.toFixed(4)}</td>
+    </tr>`;
+  }
+  function statusBadge(s) {
+    const m={success:'b-green',blocked_safety:'b-red',blocked_validation:'b-gold',blocked_ratelimit:'b-purple',error:'b-red',output_filtered:'b-red',blocked_quota:'b-blue'};
+    return `<span class="badge ${m[s]||'b-gray'}">${h(s)}</span>`;
+  }
+  const FILTERS = ['all','success','blocked_safety','blocked_validation','blocked_ratelimit','error','output_filtered'];
+  const FILTER_LABELS = { all:'Tous', success:'Succès', blocked_safety:'Safety', blocked_validation:'Validation', blocked_ratelimit:'Rate limit', error:'Erreurs', output_filtered:'Filtered' };
+
+  set(`<div style="padding:32px;max-width:1300px;">
+
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.4px;">✨ Bilan IA</h1>
+        <p style="font-size:13px;color:var(--text2);margin-top:4px;">Monitoring, kill switch &amp; audit — claude-sonnet-4-6</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        ${costAlert   ? `<span class="badge b-red" style="font-size:12px;padding:5px 12px;">⚠ Coût mensuel &gt; $50 ($${sm.cost.toFixed(2)})</span>` : ''}
+        ${safetyAlert ? `<span class="badge b-red" style="font-size:12px;padding:5px 12px;">⚠ Safety &gt; 5% (${safetyPct.toFixed(1)}%)</span>` : ''}
+        <button onclick="renderBilanIA()" class="btn btn-ghost btn-sm">↻ Rafraîchir</button>
+      </div>
+    </div>
+
+    <!-- Kill switch -->
+    <div class="card" style="padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Kill switch — Génération IA</div>
+        <div style="font-size:12px;color:var(--text2);">État actuel : <span class="badge ${iaOn?'b-green':'b-red'}" style="margin-left:6px;">${iaOn ? '✓ Activé' : '✕ Désactivé'}</span></div>
+      </div>
+      <button onclick="toggleBilanIA(${iaOn})" class="btn ${iaOn?'btn-red':'btn-gold'}">${iaOn ? '⏸ Désactiver' : '▶ Réactiver'}</button>
+    </div>
+
+    <!-- Stats -->
+    <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Statistiques</div>
+    <div class="card" style="margin-bottom:20px;overflow:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr>
+          <th class="th" style="text-align:left">Période</th>
+          <th class="th" style="text-align:center">Succès</th>
+          <th class="th" style="text-align:center">Safety</th>
+          <th class="th" style="text-align:center">Autres bloqués</th>
+          <th class="th" style="text-align:center">Tokens in/out</th>
+          <th class="th" style="text-align:center">Coût estimé</th>
+        </tr></thead>
+        <tbody>
+          ${statRow("Aujourd'hui", sd)}
+          ${statRow('7 derniers jours', sw)}
+          ${statRow('30 derniers jours', sm)}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Top users -->
+    <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Top utilisateurs (30 jours)</div>
+    <div class="card" style="margin-bottom:20px;overflow:auto;">
+      ${topList.length === 0 ? '<div style="padding:16px;color:var(--text2);font-size:13px;">Aucune donnée</div>' :
+        `<table style="width:100%;border-collapse:collapse;">
+          <thead><tr>
+            <th class="th" style="text-align:left">#</th>
+            <th class="th" style="text-align:left">Utilisateur</th>
+            <th class="th" style="text-align:center">Générations</th>
+            <th class="th" style="text-align:center">Alerte</th>
+          </tr></thead>
+          <tbody>
+            ${topList.map(([uid, c], i) => `<tr>
+              <td class="td" style="color:var(--text2)">${i+1}</td>
+              <td class="td" style="font-family:'JetBrains Mono',monospace;font-size:11px">${maskEmail(topEmailMap[uid])}</td>
+              <td class="td" style="text-align:center;font-weight:700">${c}</td>
+              <td class="td" style="text-align:center">${c>=25 ? '<span class="badge b-red">⚠ Anomalie</span>' : '—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`
+      }
+    </div>
+
+    <!-- Logs -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;">Logs récents (50 derniers)</div>
+      <div class="tab-bar">
+        ${FILTERS.map(f => `<div class="tab ${_bilanFilter===f?'active':''}" onclick="_bilanFilter='${f}';renderBilanIA()">${h(FILTER_LABELS[f])}</div>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="overflow:auto;">
+      ${(logsRaw.data||[]).length === 0 ? '<div style="padding:16px;color:var(--text2);font-size:13px;">Aucun log</div>' :
+        `<table style="width:100%;border-collapse:collapse;">
+          <thead><tr>
+            <th class="th">Timestamp</th>
+            <th class="th">Utilisateur</th>
+            <th class="th" style="text-align:center">Status</th>
+            <th class="th" style="text-align:center">Tokens</th>
+            <th class="th" style="text-align:center">Coût</th>
+            <th class="th">Code erreur</th>
+          </tr></thead>
+          <tbody>
+            ${(logsRaw.data||[]).map(r => {
+              const ts = new Date(r.generated_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+              const tok = r.input_tokens != null ? `${r.input_tokens}/${r.output_tokens}` : '—';
+              const cost = r.cost_estimate_usd != null ? `$${Number(r.cost_estimate_usd).toFixed(4)}` : '—';
+              return `<tr>
+                <td class="td" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${h(ts)}</td>
+                <td class="td" style="font-family:'JetBrains Mono',monospace;font-size:11px">${maskEmail(logEmailMap[r.user_id])}</td>
+                <td class="td" style="text-align:center">${statusBadge(r.status)}</td>
+                <td class="td" style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${h(tok)}</td>
+                <td class="td" style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px">${h(cost)}</td>
+                <td class="td" style="font-size:11px;color:var(--text2)">${h(r.error_code||'—')}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`
+      }
+    </div>
+
+  </div>`);
+}
+
+async function toggleBilanIA(currentlyEnabled) {
+  const label = currentlyEnabled ? 'désactiver' : 'réactiver';
+  if (!confirm(`Êtes-vous sûr de vouloir ${label} la génération IA ?\n\nCette action est immédiate et affecte tous les utilisateurs.`)) return;
+  const newVal = currentlyEnabled ? 'false' : 'true';
+  const { error, count } = await sb.from('app_settings').update({ value: newVal, updated_at: new Date().toISOString() }).eq('key','bilan_ia_enabled').select('*', { count: 'exact', head: true });
+  if (error) { toast(error.message, 'err'); return; }
+  if ((count ?? 0) === 0) { toast('Erreur : clé bilan_ia_enabled introuvable en base', 'err'); return; }
+  toast(currentlyEnabled ? 'Génération IA désactivée' : 'Génération IA réactivée');
+  renderBilanIA();
+}
+
+// ══════════════════════════════
+// NOTIFICATIONS — historique notification_log (lecture seule)
+// ══════════════════════════════
+//
+// ⚠ Pas de bouton « envoi de notif test » ici — volontairement.
+//   • L'Edge Function dispatch-notifications est authentifiée par header
+//     x-dispatch-secret (cron pg_cron, ~30 min), sans CORS et sans ciblage
+//     single-user : elle n'est PAS appelable depuis ce panneau côté client.
+//   • Un ancien endpoint dispatch-test a été SUPPRIMÉ pour faille de sécurité
+//     (commit 4e6c173 : fonction non authentifiée exposant la service-role en prod).
+//   • Approche propre proposée (À VALIDER PAR JHON avant tout code) : une NOUVELLE
+//     Edge Function dédiée `send-test-notification` avec verify_jwt activé, qui
+//     vérifie is_admin via la service-role, lit le push token de l'appelant dans
+//     user_push_tokens, et envoie un push Expo direct. Rien n'est implémenté pour
+//     l'instant.
+//
+// Filtrage type/status : client-side sur les 100 lignes chargées (pas de re-fetch).
+let _notifsCache = [];      // lignes brutes chargées (max 100)
+let _notifFilterType = 'all';
+let _notifFilterStatus = 'all';
+let _notifUserNames = {};   // map user_id → nom complet (fetch séparé : pas de FK notification_log→profiles)
+
+// Mappings FR — fallback sur la valeur brute si non mappée
+const NOTIF_TYPE_LABELS   = { contextual:'Contextuelle', relance:'Relance', lapsed:'Relance', discover:'Découverte', never:'Invitation', engagement:'Engagement', digest:'Récapitulatif' };
+const NOTIF_SLOT_LABELS   = { morning:'Matin', afternoon:'Après-midi', evening:'Soir', night:'Nuit' };
+const NOTIF_STATUS_LABELS = { sent:'Envoyée', success:'Envoyée', delivered:'Délivrée', failed:'Échouée', error:'Erreur', erreur:'Erreur', blocked:'Bloquée' };
+const notifLabel = (map, v) => (v == null || v === '') ? '—' : (map[String(v).toLowerCase()] || v);
+
+function notifStatusBadge(s) {
+  const v = (s || '').toLowerCase();
+  let cls = 'b-gray';
+  if (['sent','success','delivered','ok'].includes(v)) cls = 'b-green';
+  else if (['failed','error','erreur','blocked'].includes(v)) cls = 'b-red';
+  return `<span class="badge ${cls}">${h(notifLabel(NOTIF_STATUS_LABELS, s))}</span>`;
+}
+
+async function renderNotifs() {
+  load();
+  // Rafraîchir = état propre : filtres réinitialisés (les valeurs distinctes peuvent changer entre deux visites)
+  _notifFilterType = 'all';
+  _notifFilterStatus = 'all';
+  const { data, error } = await sb
+    .from('notification_log')
+    .select('id,user_id,notification_type,slot,sent_at,status,local_date,predefined_actions(title_fr)')
+    .order('sent_at', { ascending: false })
+    .limit(100);
+
+  if (error) toast(error.message, 'err');
+  _notifsCache = data || [];
+
+  // Noms complets : fetch séparé (notification_log.user_id → auth.users, pas de FK vers profiles → embed impossible)
+  _notifUserNames = {};
+  const uids = [...new Set(_notifsCache.map(r => r.user_id).filter(Boolean))];
+  if (uids.length) {
+    const { data: profs } = await sb.from('profiles').select('id,name').in('id', uids);
+    (profs || []).forEach(p => { if (p.name) _notifUserNames[p.id] = p.name; });
+  }
+
+  paintNotifs();
+  renderTemplates();
+}
+
+function paintNotifs() {
+  const rows = _notifsCache;
+
+  // Options dynamiques à partir des valeurs distinctes chargées
+  const types = [...new Set(rows.map(r => r.notification_type).filter(Boolean))].sort();
+  const statuses = [...new Set(rows.map(r => r.status).filter(Boolean))].sort();
+
+  // Filtrage client-side
+  const filtered = rows.filter(r =>
+    (_notifFilterType === 'all'   || r.notification_type === _notifFilterType) &&
+    (_notifFilterStatus === 'all' || r.status === _notifFilterStatus)
+  );
+
+  const typeOpts = ['<option value="all">Tous les types</option>']
+    .concat(types.map(t => `<option value="${h(t)}" ${_notifFilterType===t?'selected':''}>${h(notifLabel(NOTIF_TYPE_LABELS, t))}</option>`)).join('');
+  const statusOpts = ['<option value="all">Tous les statuts</option>']
+    .concat(statuses.map(s => `<option value="${h(s)}" ${_notifFilterStatus===s?'selected':''}>${h(notifLabel(NOTIF_STATUS_LABELS, s))}</option>`)).join('');
+
+  const tableBody = filtered.map(r => {
+    const ts = r.sent_at
+      ? new Date(r.sent_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})
+      : '—';
+    const userName = (r.user_id && _notifUserNames[r.user_id])
+      ? _notifUserNames[r.user_id]
+      : (r.user_id ? String(r.user_id).slice(0,8) : '—');
+    const action = r.predefined_actions && r.predefined_actions.title_fr ? r.predefined_actions.title_fr : '—';
+    return `<tr>
+      <td class="td" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${h(ts)}</td>
+      <td class="td" style="font-size:12px">${h(notifLabel(NOTIF_TYPE_LABELS, r.notification_type))}</td>
+      <td class="td" style="font-size:12px;color:var(--text2)">${h(notifLabel(NOTIF_SLOT_LABELS, r.slot))}</td>
+      <td class="td" style="text-align:center">${notifStatusBadge(r.status)}</td>
+      <td class="td" style="font-size:12px;color:var(--text2)">${h(userName)}</td>
+      <td class="td" style="font-size:12px">${h(action)}</td>
+    </tr>`;
+  }).join('');
+
+  set(`<div style="padding:32px;max-width:1300px;">
+
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.4px;">🔔 Notifications</h1>
+        <p style="font-size:13px;color:var(--text2);margin-top:4px;">Historique des notifications envoyées — notification_log (100 dernières, lecture seule)</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <button id="sendTestNotifBtn" onclick="sendTestNotif()" class="btn btn-sm" style="border:1px solid rgba(99,102,241,0.4);color:#fff;background:var(--accent,#6366f1);font-weight:700;">🔔 Envoyer une notif test</button>
+        <button onclick="renderNotifs()" class="btn btn-ghost btn-sm">↻ Rafraîchir</button>
+      </div>
+    </div>
+
+    <!-- Filtres + compteur -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+      <select id="notifTypeFilter" onchange="_notifFilterType=this.value;paintNotifs()" class="inp" style="min-width:160px;">${typeOpts}</select>
+      <select id="notifStatusFilter" onchange="_notifFilterStatus=this.value;paintNotifs()" class="inp" style="min-width:160px;">${statusOpts}</select>
+      <span style="font-size:12px;color:var(--text2);margin-left:auto;">${filtered.length} résultat${filtered.length>1?'s':''}${rows.length!==filtered.length?` / ${rows.length}`:''}</span>
+    </div>
+
+    <!-- Tableau -->
+    <div class="card" style="overflow:auto;">
+      ${rows.length === 0
+        ? `<div style="padding:24px;color:var(--text2);font-size:13px;line-height:1.6;">
+            <div style="font-weight:600;color:var(--text);margin-bottom:6px;">Aucune notification dans l'historique.</div>
+            Si des notifications partent bien en prod mais que cette table reste vide ici, c'est probablement
+            la RLS : <code style="font-family:'JetBrains Mono',monospace;">notification_log</code> n'a qu'une policy
+            SELECT « own » et l'admin ne voit que ses propres lignes. Applique la migration
+            <code style="font-family:'JetBrains Mono',monospace;">20260612000000_notification_log_admin_select.sql</code>
+            dans le SQL Editor Supabase (policy SELECT admin additive).
+          </div>`
+        : filtered.length === 0
+          ? '<div style="padding:24px;color:var(--text2);font-size:13px;">Aucun résultat pour ces filtres.</div>'
+          : `<table style="width:100%;border-collapse:collapse;">
+              <thead><tr>
+                <th class="th">Date / heure</th>
+                <th class="th">Type</th>
+                <th class="th">Moment</th>
+                <th class="th" style="text-align:center">Statut</th>
+                <th class="th">Utilisateur</th>
+                <th class="th">Action</th>
+              </tr></thead>
+              <tbody>${tableBody}</tbody>
+            </table>`
+      }
+    </div>
+
+    <!-- Sous-section : Templates du coach (CRUD notif_templates) -->
+    <div id="tplSection" style="margin-top:32px;"></div>
+
+  </div>`);
+}
+
+// ── Envoyer une notif test au compte admin courant (Edge Function send-test-notif).
+// Le push part vers les tokens push actifs de l'appelant (admin connecté).
+async function sendTestNotif() {
+  const btn = gi('sendTestNotifBtn');
+  const origLabel = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.style.cursor = 'not-allowed'; btn.textContent = 'Envoi…'; }
+
+  try {
+    const { data, error } = await sb.functions.invoke('send-test-notif');
+
+    if (error) {
+      let msg = error.message || "Échec de l'envoi";
+      let code = null;
+      // Extraire le message/errorCode JSON renvoyé par l'edge function
+      try { if (error.context && typeof error.context.json === 'function') { const j = await error.context.json(); if (j?.error) msg = j.error; if (j?.errorCode) code = j.errorCode; } } catch {}
+      if (code === 'NO_TOKEN') {
+        toast("Aucun token push actif : ouvre l'app mobile et accepte les notifications au moins une fois.", 'err');
+      } else {
+        toast(msg, 'err');
+      }
+      return;
+    }
+
+    const n = data && typeof data.sent === 'number' ? data.sent : '?';
+    toast(`✓ Notif test envoyée (${n} token${n > 1 ? 's' : ''})`);
+  } finally {
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; btn.textContent = origLabel; }
+  }
+}
+
+// ══════════════════════════════
+// TEMPLATES DU COACH (notif_templates)
+// ── Cache SÉPARÉ de _notifsCache. Ne JAMAIS toucher _notifsCache ici.
+// ══════════════════════════════
+let _tplCache = [];
+let _tplError = null;     // null = ok ; 'missing' = table absente ; string = autre erreur
+
+const TPL_STATUSES = ['lapsed', 'never', 'discover'];
+const TPL_LANGS = ['fr', 'he', 'en'];
+const TPL_STATUS_LABEL = { lapsed: 'Délaissée (relance)', never: 'Jamais faite (invitation)', discover: 'Découverte (catalogue)' };
+const TPL_LANG_LABEL = { fr: '🇫🇷 FR', he: '🇮🇱 HE', en: '🇬🇧 EN' };
+
+async function loadTplCache() {
+  const { data, error } = await sb
+    .from('notif_templates')
+    .select('*')
+    .order('status')
+    .order('lang');
+  if (error) {
+    const msg = (error.message || '') + ' ' + (error.code || '');
+    if (/relation .* does not exist|does not exist|notif_templates|PGRST205|404|42P01/i.test(msg)) {
+      _tplError = 'missing';
+    } else {
+      _tplError = error.message || 'Erreur inconnue';
+    }
+    _tplCache = [];
+    return;
+  }
+  _tplError = null;
+  _tplCache = data || [];
+}
+
+async function renderTemplates() {
+  const host = gi('tplSection');
+  if (!host) return;
+  await loadTplCache();
+  paintTemplates();
+}
+
+function paintTemplates() {
+  const host = gi('tplSection');
+  if (!host) return;
+
+  const headerHtml = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;border-top:1px solid var(--border);padding-top:28px;">
+      <div>
+        <h2 style="font-size:18px;font-weight:800;color:var(--text);letter-spacing:-0.3px;">📝 Templates du coach</h2>
+        <p style="font-size:13px;color:var(--text2);margin-top:4px;">Messages des notifications, éditables — table notif_templates. Le dispatch pioche aléatoirement parmi les templates actifs ; à défaut, il retombe sur les messages codés en dur.</p>
+      </div>
+      <button onclick="openTplModal()" class="btn btn-gold btn-sm">+ Ajouter un template</button>
+    </div>`;
+
+  if (_tplError === 'missing') {
+    host.innerHTML = headerHtml + `
+      <div class="card" style="padding:24px;color:var(--text2);font-size:13px;line-height:1.6;">
+        <div style="font-weight:600;color:var(--text);margin-bottom:6px;">Table notif_templates absente.</div>
+        Applique les migrations dans le SQL Editor Supabase, dans cet ordre :
+        <code style="font-family:'JetBrains Mono',monospace;">20260612000003_notif_templates.sql</code> (DDL) puis
+        <code style="font-family:'JetBrains Mono',monospace;">20260612000004_notif_templates_seed.sql</code> (seed, une seule fois).
+      </div>`;
+    return;
+  }
+  if (_tplError) {
+    host.innerHTML = headerHtml + `<div class="card" style="padding:20px;color:var(--text2);font-size:13px;">Erreur de chargement : ${h(_tplError)}</div>`;
+    return;
+  }
+
+  let groupsHtml = '';
+  for (const s of TPL_STATUSES) {
+    for (const l of TPL_LANGS) {
+      const items = _tplCache.filter(t => t.status === s && t.lang === l);
+      const rows = items.map(t => {
+        const badge = t.actif
+          ? '<span class="badge b-green">actif</span>'
+          : '<span class="badge b-gray">inactif</span>';
+        return `<div class="action-item" style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;color:var(--text);line-height:1.5;${t.lang==='he'?'direction:rtl;text-align:right;':''}">${h(t.body)}</div>
+            <div style="margin-top:6px;">${badge}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button onclick="toggleTpl('${esc(t.id)}', ${t.actif ? 'false' : 'true'})" class="btn btn-ghost btn-sm" title="${t.actif ? 'Désactiver' : 'Activer'}">${t.actif ? '⏸' : '▶'}</button>
+            <button onclick="openTplModal('${esc(t.id)}')" class="btn btn-blue btn-sm" title="Modifier">✏️</button>
+            <button onclick="delTpl('${esc(t.id)}')" class="btn btn-red btn-sm" title="Supprimer">🗑️</button>
+          </div>
+        </div>`;
+      }).join('');
+      groupsHtml += `<details class="tpl-group">
+        <summary>
+          <span class="tpl-caret">▸</span>
+          <span>${h(TPL_STATUS_LABEL[s])}</span><span style="opacity:.5;">·</span><span>${TPL_LANG_LABEL[l]}</span>
+          <span style="margin-left:auto;font-weight:500;opacity:.7;">${items.length}</span>
+        </summary>
+        <div class="tpl-group__body">
+          ${items.length ? `<div style="display:flex;flex-direction:column;gap:8px;">${rows}</div>`
+            : `<div style="font-size:12px;color:var(--text2);padding:8px 0;opacity:.7;">Aucun template — le dispatch utilisera le filet de secours codé en dur.</div>`}
+        </div>
+      </details>`;
+    }
+  }
+
+  host.innerHTML = headerHtml + `<div class="card" style="padding:18px 20px;">${groupsHtml}</div>`;
+}
+
+async function openTplModal(id) {
+  let it = { status: 'lapsed', lang: 'fr', body: '', actif: true };
+  if (id) {
+    const found = _tplCache.find(t => String(t.id) === String(id));
+    if (found) it = found;
+  }
+  const statusOpts = TPL_STATUSES.map(s => `<option value="${s}" ${it.status===s?'selected':''}>${h(TPL_STATUS_LABEL[s])}</option>`).join('');
+  const langOpts = TPL_LANGS.map(l => `<option value="${l}" ${it.lang===l?'selected':''}>${h(TPL_LANG_LABEL[l])}</option>`).join('');
+  openModal(`<div style="padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h2 style="font-size:17px;font-weight:800;color:var(--text);">${id ? 'Modifier le template' : 'Nouveau template'}</h2>
+      <button onclick="closeModal()" class="btn btn-ghost btn-icon">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label class="fl">Statut</label><select id="t_status" class="inp">${statusOpts}</select></div>
+        <div><label class="fl">Langue</label><select id="t_lang" class="inp">${langOpts}</select></div>
+      </div>
+      <div><label class="fl">Message *</label><textarea id="t_body" class="inp" rows="4" style="resize:vertical;" placeholder="Texte du message de notification…">${h(it.body)}</textarea></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <label class="toggle"><input type="checkbox" id="t_actif" ${it.actif?'checked':''}><span class="tslider"></span></label>
+        <span style="font-size:13px;color:var(--text2);">Template actif</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <button onclick="saveTpl('${esc(id||'')}')" class="btn btn-gold" style="flex:1;justify-content:center;padding:11px;">💾 Enregistrer</button>
+      <button onclick="closeModal()" class="btn btn-ghost">Annuler</button>
+    </div>
+  </div>`);
+}
+
+async function saveTpl(id) {
+  const body = v('t_body');
+  if (!body) { toast('Le message est obligatoire', 'err'); return; }
+  const d = { status: v('t_status'), lang: v('t_lang'), body, actif: cb('t_actif') };
+  const { error } = id
+    ? await sb.from('notif_templates').update(d).eq('id', id)
+    : await sb.from('notif_templates').insert(d);
+  if (error) { toast(error.message, 'err'); return; }
+  toast(id ? 'Template mis à jour !' : 'Template créé !');
+  closeModal();
+  await renderTemplates();
+}
+
+async function toggleTpl(id, actif) {
+  const { error } = await sb.from('notif_templates').update({ actif }).eq('id', id);
+  if (error) { toast(error.message, 'err'); return; }
+  toast(actif ? 'Template activé' : 'Template désactivé');
+  await renderTemplates();
+}
+
+async function delTpl(id) {
+  if (!confirm('Supprimer ce template ?')) return;
+  const { error } = await sb.from('notif_templates').delete().eq('id', id);
+  if (error) { toast(error.message, 'err'); return; }
+  toast('Template supprimé');
+  await renderTemplates();
+}
+</script>
+</body>
+</html>
