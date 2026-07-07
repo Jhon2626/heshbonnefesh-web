@@ -53,6 +53,20 @@
       var deepLink = 'heshbonnefesh://auth/callback' + hash;
       document.getElementById('openBtn').setAttribute('href', deepLink);
 
+      // ── Diagnostic visible (temporaire) : dit exactement ce que Supabase a transmis ──
+      var diag;
+      if (!hash) {
+        diag = 'DIAG : aucun fragment reçu — redirect_to refusé par Supabase (allowlist) ou Site URL utilisé.';
+      } else if (hash.indexOf('access_token=') !== -1) {
+        diag = 'DIAG : jetons reçus ✓ — la suite se joue dans l\'app.';
+      } else if (hash.indexOf('error') !== -1) {
+        diag = 'DIAG : erreur Supabase → ' + decodeURIComponent(hash.slice(1)).split('&').filter(function(k){return k.indexOf('error')===0;}).join(' · ');
+      } else {
+        diag = 'DIAG : fragment inattendu → ' + hash.slice(0, 80);
+      }
+      var hint = document.querySelector('.hint');
+      hint.textContent = diag;
+
       // Lien en erreur (expiré/déjà utilisé) → message adapté, l'app affichera le détail.
       if (hash.indexOf('error') !== -1) {
         document.getElementById('title').textContent = 'Lien expiré ou déjà utilisé';
@@ -61,7 +75,9 @@
 
       // Tentative d'ouverture automatique (les navigateurs in-app peuvent la bloquer :
       // le bouton reste le chemin garanti, car déclenché par un geste utilisateur).
-      setTimeout(function () { window.location.href = deepLink; }, 350);
+      if (hash.indexOf('access_token=') !== -1) {
+        setTimeout(function () { window.location.href = deepLink; }, 350);
+      }
     })();
   </script>
 </body>
