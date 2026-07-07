@@ -61,6 +61,8 @@
       var diag;
       if (!hash && !search) {
         diag = 'DIAG : rien reçu (ni fragment ni query) — le lien e-mail ne passe pas par /auth/v1/verify, ou redirect_to refusé.';
+      } else if (all.indexOf('token_hash=') !== -1) {
+        diag = 'DIAG : token_hash reçu ✓ — l\'app va vérifier le lien.';
       } else if (all.indexOf('access_token=') !== -1) {
         diag = 'DIAG : jetons reçus ✓ (fragment) — la suite se joue dans l\'app.';
       } else if (all.indexOf('code=') !== -1) {
@@ -78,7 +80,7 @@
       }
 
       // Ouverture automatique uniquement si on a quelque chose d'utile à donner à l'app.
-      if (all.indexOf('access_token=') !== -1 || all.indexOf('code=') !== -1) {
+      if (all.indexOf('token_hash=') !== -1 || all.indexOf('access_token=') !== -1 || all.indexOf('code=') !== -1) {
         setTimeout(function () { window.location.href = deepLink; }, 350);
       }
     })();
