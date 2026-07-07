@@ -48,34 +48,37 @@
   </div>
   <script>
     (function () {
-      // Relaie le fragment (#access_token=…) tel quel vers l'app — flux implicite Supabase.
+      // Supabase peut renvoyer les infos en FRAGMENT (#access_token=… / #error=…)
+      // ou en QUERY (?code=… / ?error=…) : on inspecte et on relaie LES DEUX.
       var hash = window.location.hash || '';
-      var deepLink = 'heshbonnefesh://auth/callback' + hash;
+      var search = window.location.search || '';
+      var deepLink = 'heshbonnefesh://auth/callback' + search + hash;
       document.getElementById('openBtn').setAttribute('href', deepLink);
 
-      // ── Diagnostic visible (temporaire) : dit exactement ce que Supabase a transmis ──
-      var diag;
-      if (!hash) {
-        diag = 'DIAG : aucun fragment reçu — redirect_to refusé par Supabase (allowlist) ou Site URL utilisé.';
-      } else if (hash.indexOf('access_token=') !== -1) {
-        diag = 'DIAG : jetons reçus ✓ — la suite se joue dans l\'app.';
-      } else if (hash.indexOf('error') !== -1) {
-        diag = 'DIAG : erreur Supabase → ' + decodeURIComponent(hash.slice(1)).split('&').filter(function(k){return k.indexOf('error')===0;}).join(' · ');
-      } else {
-        diag = 'DIAG : fragment inattendu → ' + hash.slice(0, 80);
-      }
-      var hint = document.querySelector('.hint');
-      hint.textContent = diag;
+      var all = (search ? search.slice(1) : '') + (hash ? '&' + hash.slice(1) : '');
 
-      // Lien en erreur (expiré/déjà utilisé) → message adapté, l'app affichera le détail.
-      if (hash.indexOf('error') !== -1) {
+      // ── Diagnostic visible (temporaire) ──
+      var diag;
+      if (!hash && !search) {
+        diag = 'DIAG : rien reçu (ni fragment ni query) — le lien e-mail ne passe pas par /auth/v1/verify, ou redirect_to refusé.';
+      } else if (all.indexOf('access_token=') !== -1) {
+        diag = 'DIAG : jetons reçus ✓ (fragment) — la suite se joue dans l\'app.';
+      } else if (all.indexOf('code=') !== -1) {
+        diag = 'DIAG : code PKCE reçu en query — le client de l\'app est en flux implicite, incompatibilité de flux.';
+      } else if (all.indexOf('error') !== -1) {
+        diag = 'DIAG : erreur Supabase → ' + decodeURIComponent(all).split('&').filter(function(k){return k.indexOf('error')===0;}).join(' · ');
+      } else {
+        diag = 'DIAG : paramètres inattendus → ' + (search + ' ' + hash).slice(0, 100);
+      }
+      document.querySelector('.hint').textContent = diag;
+
+      if (all.indexOf('error') !== -1) {
         document.getElementById('title').textContent = 'Lien expiré ou déjà utilisé';
         document.getElementById('msg').innerHTML = "Ouvre l'application et connecte-toi — si besoin, redemande un e-mail de confirmation.";
       }
 
-      // Tentative d'ouverture automatique (les navigateurs in-app peuvent la bloquer :
-      // le bouton reste le chemin garanti, car déclenché par un geste utilisateur).
-      if (hash.indexOf('access_token=') !== -1) {
+      // Ouverture automatique uniquement si on a quelque chose d'utile à donner à l'app.
+      if (all.indexOf('access_token=') !== -1 || all.indexOf('code=') !== -1) {
         setTimeout(function () { window.location.href = deepLink; }, 350);
       }
     })();
