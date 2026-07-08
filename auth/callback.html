@@ -57,23 +57,6 @@
 
       var all = (search ? search.slice(1) : '') + (hash ? '&' + hash.slice(1) : '');
 
-      // ── Diagnostic visible (temporaire) ──
-      var diag;
-      if (!hash && !search) {
-        diag = 'DIAG : rien reçu (ni fragment ni query) — le lien e-mail ne passe pas par /auth/v1/verify, ou redirect_to refusé.';
-      } else if (all.indexOf('token_hash=') !== -1) {
-        diag = 'DIAG : token_hash reçu ✓ — l\'app va vérifier le lien.';
-      } else if (all.indexOf('access_token=') !== -1) {
-        diag = 'DIAG : jetons reçus ✓ (fragment) — la suite se joue dans l\'app.';
-      } else if (all.indexOf('code=') !== -1) {
-        diag = 'DIAG : code PKCE reçu en query — le client de l\'app est en flux implicite, incompatibilité de flux.';
-      } else if (all.indexOf('error') !== -1) {
-        diag = 'DIAG : erreur Supabase → ' + decodeURIComponent(all).split('&').filter(function(k){return k.indexOf('error')===0;}).join(' · ');
-      } else {
-        diag = 'DIAG : paramètres inattendus → ' + (search + ' ' + hash).slice(0, 100);
-      }
-      document.querySelector('.hint').textContent = diag;
-
       if (all.indexOf('error') !== -1) {
         document.getElementById('title').textContent = 'Lien expiré ou déjà utilisé';
         document.getElementById('msg').innerHTML = "Ouvre l'application et connecte-toi — si besoin, redemande un e-mail de confirmation.";
