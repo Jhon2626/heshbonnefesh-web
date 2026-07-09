@@ -11,7 +11,8 @@
   <meta property="og:image" content="assets/dawn-wide.jpg">
   <meta name="theme-color" content="#FAF7F0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://tqrjwvgrdomfvgtgqgrd.supabase.co; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; base-uri 'self'; form-action 'self'">
-  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="icon" type="image/png" href="assets/favicon.png?v=2">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
@@ -74,6 +75,19 @@
         <span data-i18n="hero.scroll">découvrir</span>
         <span class="hero-scroll-line" aria-hidden="true"></span>
       </a>
+    </section>
+
+    <!-- ═══════════ LA VIDÉO ═══════════ -->
+    <section class="video" id="video" aria-labelledby="video-titre">
+      <h2 id="video-titre" class="rv" data-i18n="video.title">Découvrez Heshbon Nefesh</h2>
+      <p class="video-sub rv" data-i18n="video.sub">Deux minutes en images — le rythme, la lumière et l'esprit de l'application.</p>
+      <div class="video-frame rv" id="videoFrame">
+        <img src="assets/video-poster.jpg" alt="" loading="lazy" class="video-poster">
+        <button class="video-play" id="videoPlay" type="button" data-i18n-attr="aria-label:video.play" aria-label="Lire la vidéo de présentation">
+          <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.54.84l10-6.5a1 1 0 0 0 0-1.68l-10-6.5A1 1 0 0 0 8 5.5Z"/></svg>
+        </button>
+        <p class="video-note" id="videoNote" hidden data-i18n="video.note">La vidéo arrive très bientôt.</p>
+      </div>
     </section>
 
     <!-- ═══════════ LA DÉMARCHE ═══════════ -->
@@ -226,19 +240,6 @@
           <li><img src="assets/cat-shalom-bayit.jpg" alt="" loading="lazy"><span data-i18n="uni.shalom">Shalom bayit</span></li>
           <li><img src="assets/cat-mitsvot-femme.jpg" alt="" loading="lazy"><span data-i18n="uni.mitsvot">Mitsvot de la femme</span></li>
         </ul>
-      </div>
-    </section>
-
-    <!-- ═══════════ LA VIDÉO ═══════════ -->
-    <section class="video" id="video" aria-labelledby="video-titre">
-      <h2 id="video-titre" class="rv" data-i18n="video.title">Découvrez Heshbon Nefesh</h2>
-      <p class="video-sub rv" data-i18n="video.sub">Deux minutes en images — le rythme, la lumière et l'esprit de l'application.</p>
-      <div class="video-frame rv" id="videoFrame">
-        <img src="assets/banner-fetes.jpg" alt="" loading="lazy" class="video-poster">
-        <button class="video-play" id="videoPlay" type="button" data-i18n-attr="aria-label:video.play" aria-label="Lire la vidéo de présentation">
-          <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.54.84l10-6.5a1 1 0 0 0 0-1.68l-10-6.5A1 1 0 0 0 8 5.5Z"/></svg>
-        </button>
-        <p class="video-note" id="videoNote" hidden data-i18n="video.note">La vidéo arrive très bientôt.</p>
       </div>
     </section>
 

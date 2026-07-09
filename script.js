@@ -10,6 +10,10 @@ const VIDEO_SOURCES = {
   en: "assets/presentation-en.mp4",
   he: "assets/presentation-he.mp4",
 };
+// Versions verticales 9:16 (mobile portrait) — FR pour l'instant.
+const VIDEO_VERTICAL = {
+  fr: "assets/presentation-fr-916.mp4",
+};
 // Edge Function Supabase qui reçoit le formulaire (validation + anti-spam côté serveur).
 const CONTACT_ENDPOINT = "https://tqrjwvgrdomfvgtgqgrd.supabase.co/functions/v1/contact-form";
 
@@ -189,8 +193,20 @@ document.documentElement.classList.add("js");
   const note = document.getElementById("videoNote");
   if (!btn || !frame) return;
 
+  // Version verticale à utiliser (mobile portrait + langue disposant d'un 9:16), sinon null.
+  const portrait = () => window.matchMedia("(max-width: 760px)").matches;
+  const verticalSrc = () => (portrait() ? VIDEO_VERTICAL[window.HN_LANG] : null) || null;
+  // Le cadre passe en 9:16 uniquement quand une version verticale est réellement dispo.
+  const syncOrientation = () => frame.classList.toggle("is-vertical", !!verticalSrc());
+  syncOrientation();
+  addEventListener("resize", syncOrientation, { passive: true });
+  // Rejouer la bascule quand l'utilisateur change de langue.
+  document.querySelectorAll("[data-lang]").forEach(b =>
+    b.addEventListener("click", () => setTimeout(syncOrientation, 0))
+  );
+
   btn.addEventListener("click", () => {
-    const src = VIDEO_SOURCES[window.HN_LANG] || VIDEO_SOURCES.fr;
+    const src = verticalSrc() || VIDEO_SOURCES[window.HN_LANG] || VIDEO_SOURCES.fr;
     if (!src) {
       note.hidden = false;
       clearTimeout(note._t);
