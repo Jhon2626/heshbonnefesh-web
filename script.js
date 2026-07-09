@@ -4,9 +4,12 @@
 "use strict";
 
 /* ── Configuration ─────────────────────────────────────────── */
-// Quand la vidéo est prête : coller ici l'URL d'embed
-// (ex. "https://www.youtube-nocookie.com/embed/XXXX" ou un .mp4 auto-hébergé).
-const VIDEO_URL = "";
+// Vidéo de présentation, une version par langue (auto-hébergée dans assets/).
+const VIDEO_SOURCES = {
+  fr: "assets/presentation-fr.mp4",
+  en: "assets/presentation-en.mp4",
+  he: "assets/presentation-he.mp4",
+};
 // Edge Function Supabase qui reçoit le formulaire (validation + anti-spam côté serveur).
 const CONTACT_ENDPOINT = "https://tqrjwvgrdomfvgtgqgrd.supabase.co/functions/v1/contact-form";
 
@@ -187,22 +190,23 @@ document.documentElement.classList.add("js");
   if (!btn || !frame) return;
 
   btn.addEventListener("click", () => {
-    if (!VIDEO_URL) {
+    const src = VIDEO_SOURCES[window.HN_LANG] || VIDEO_SOURCES.fr;
+    if (!src) {
       note.hidden = false;
       clearTimeout(note._t);
       note._t = setTimeout(() => { note.hidden = true; }, 5200);
       return;
     }
     let media;
-    if (/\.(mp4|webm|mov)(\?|$)/i.test(VIDEO_URL)) {
+    if (/\.(mp4|webm|mov)(\?|$)/i.test(src)) {
       media = document.createElement("video");
-      media.src = VIDEO_URL;
+      media.src = src;
       media.controls = true;
       media.autoplay = true;
       media.playsInline = true;
     } else {
       media = document.createElement("iframe");
-      media.src = VIDEO_URL + (VIDEO_URL.includes("?") ? "&" : "?") + "autoplay=1";
+      media.src = src + (src.includes("?") ? "&" : "?") + "autoplay=1";
       media.allow = "autoplay; fullscreen; picture-in-picture";
       media.allowFullscreen = true;
       media.title = "Heshbon Nefesh";
