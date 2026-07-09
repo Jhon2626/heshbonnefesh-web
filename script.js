@@ -193,12 +193,31 @@ document.documentElement.classList.add("js");
   const note = document.getElementById("videoNote");
   if (!btn || !frame) return;
 
-  // Version verticale à utiliser (mobile portrait + langue disposant d'un 9:16), sinon null.
-  const portrait = () => window.matchMedia("(max-width: 760px)").matches;
-  const verticalSrc = () => (portrait() ? VIDEO_VERTICAL[window.HN_LANG] : null) || null;
-  // Le cadre passe en 9:16 uniquement quand une version verticale est réellement dispo.
-  const syncOrientation = () => frame.classList.toggle("is-vertical", !!verticalSrc());
+  // Vertical (9:16) uniquement en PORTRAIT (orientation réelle, pas la largeur) sur mobile,
+  // et si la langue courante a une version verticale. Sinon 16:9.
+  const mqVertical = window.matchMedia("(orientation: portrait) and (max-width: 900px)");
+  const verticalSrc = () => (mqVertical.matches ? VIDEO_VERTICAL[window.HN_LANG] : null) || null;
+  const pickSrc = () => verticalSrc() || VIDEO_SOURCES[window.HN_LANG] || VIDEO_SOURCES.fr;
+
+  function syncOrientation() {
+    frame.classList.toggle("is-vertical", !!verticalSrc());
+    // Si une vidéo joue déjà, basculer 16:9 <-> 9:16 en conservant la position.
+    const v = frame.querySelector("video");
+    if (!v) return;
+    const want = pickSrc();
+    if (v.src.endsWith(want)) return;
+    const t = v.currentTime, playing = !v.paused;
+    v.src = want;
+    v.addEventListener("loadedmetadata", () => {
+      try { v.currentTime = t; } catch (e) {}
+      if (playing) v.play().catch(() => {});
+    }, { once: true });
+    v.load();
+  }
+
   syncOrientation();
+  mqVertical.addEventListener("change", syncOrientation);
+  addEventListener("orientationchange", syncOrientation);
   addEventListener("resize", syncOrientation, { passive: true });
   // Rejouer la bascule quand l'utilisateur change de langue.
   document.querySelectorAll("[data-lang]").forEach(b =>
@@ -206,7 +225,7 @@ document.documentElement.classList.add("js");
   );
 
   btn.addEventListener("click", () => {
-    const src = verticalSrc() || VIDEO_SOURCES[window.HN_LANG] || VIDEO_SOURCES.fr;
+    const src = pickSrc();
     if (!src) {
       note.hidden = false;
       clearTimeout(note._t);
