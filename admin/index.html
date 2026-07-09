@@ -625,7 +625,7 @@ async function loadActiviteStats() {
     const [tot, prem, soon] = await Promise.all([
       sb.from('profiles').select('id', { count: 'exact', head: true }),
       sb.from('profiles').select('id', { count: 'exact', head: true }).eq('is_premium', true),
-      sb.from('profiles').select('id', { count: 'exact', head: true }).eq('is_premium', true).gte('premium_expires_at', new Date(now).toISOString()).lte('premium_expires_at', soonISO),
+      sb.from('profiles').select('id', { count: 'exact', head: true }).eq('is_premium', true).gte('current_period_end', new Date(now).toISOString()).lte('current_period_end', soonISO),
     ]);
     const total = tot.count || 0, premium = prem.count || 0;
     if (total > 0) out.empty = false;
@@ -1952,7 +1952,8 @@ async function showUserDetails(uid) {
 
         ${section('💎 Abonnement', `
           ${row('Plan', u.is_premium ? '<span style="color:var(--gold);">✨ Premium</span>' : 'Gratuit')}
-          ${u.is_premium && u.premium_expires_at ? row('Expire le', new Date(u.premium_expires_at).toLocaleDateString('fr-FR')) : ''}
+          ${u.is_premium && u.current_period_end ? row('Expire le', (u.current_period_end === 'infinity' || String(u.current_period_end).startsWith('9999')) ? 'À vie' : new Date(u.current_period_end).toLocaleDateString('fr-FR')) : ''}
+          ${u.source ? row('Source', u.source === 'webhook' ? 'RevenueCat' : u.source === 'manual' ? 'Octroi manuel' : u.source) : ''}
         `)}
 
         ${section('📊 Statistiques', `
@@ -2074,8 +2075,20 @@ function closeOverlay() { closeModal(); }
 
 // ─── Actions ───
 async function togglePremium(uid, cur) {
-  const { error } = await sb.from('profiles').update({ is_premium: !cur }).eq('id', uid);
-  if (error) { toast(error.message, 'err'); return; }
+  // is_premium est DÉRIVÉ (modèle sub_status/current_period_end) : on ne l'écrit
+  // plus en direct. Premium actuel → revoke ; Gratuit → grant perpétuel (infinity).
+  const call = (force) => cur
+    ? sb.rpc('revoke_premium', { p_user_id: uid, p_force: force })
+    : sb.rpc('grant_premium', { p_user_id: uid, p_until: 'infinity', p_reason: 'admin panel', p_force: force });
+  let { error } = await call(false);
+  if (error) {
+    // Abonnement RevenueCat actif (source=webhook) : forçage sur confirmation.
+    if (/source=webhook/i.test(error.message)) {
+      if (!confirm(error.message + '\n\nForcer quand même ?')) return;
+      ({ error } = await call(true));
+    }
+    if (error) { toast(error.message, 'err'); return; }
+  }
   toast(!cur ? 'Premium activé !' : 'Premium retiré');
   renderUsers();
 }
