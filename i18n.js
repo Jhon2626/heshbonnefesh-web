@@ -10,7 +10,7 @@ const I18N = {
   fr: {
     _meta: {
       title: "Heshbon Nefesh — Le compte de l'âme, chaque jour",
-      description: "Heshbon Nefesh est un compagnon d'introspection juive : des pratiques quotidiennes à votre mesure, des bilans guidés fidèles à la tradition, et le calendrier juif intégré. Disponible sur iOS et Android.",
+      description: "Heshbon Nefesh est un compagnon d'introspection juive : des pratiques quotidiennes à votre mesure, des bilans guidés fidèles à la tradition, et le calendrier juif intégré. Disponible sur Android.",
       legal: "fr"
     },
     "nav.demarche": "La démarche",
@@ -22,7 +22,7 @@ const I18N = {
     "hero.sub": "Heshbon Nefesh est un compagnon d'introspection juive : des pratiques quotidiennes à votre mesure, des bilans guidés fidèles à la tradition, et le calendrier juif qui rythme vos journées.",
     "store.ios.small": "Télécharger dans l'",
     "store.android.small": "Disponible sur",
-    "hero.avail": "Disponible sur iOS et Android",
+    "hero.avail": "Disponible sur Android",
     "hero.scroll": "découvrir",
     "dem.title": "Une pratique millénaire,<br>un geste quotidien",
     "dem.lead": "Le <em>heshbon nefesh</em> — littéralement « le compte de l'âme » — est la tradition juive de l'examen de conscience : prendre un moment, chaque jour, pour regarder honnêtement où l'on en est, et choisir un pas de plus. Ni culpabilité, ni performance : une croissance douce et régulière.",
@@ -68,6 +68,9 @@ const I18N = {
     "video.sub": "Deux minutes en images — le rythme, la lumière et l'esprit de l'application.",
     "video.note": "La vidéo arrive très bientôt.",
     "video.play": "Lire la vidéo de présentation",
+    "video.share": "Partager la vidéo",
+    "video.shareText": "Découvre Heshbon Nefesh — le compte de l'âme, chaque jour.",
+    "video.copied": "Lien copié !",
     "c.title": "Écrivez-nous",
     "c.p": "Une question, une idée, ou l'envie de nous dire bonjour ? Laissez-nous un mot — nous lisons chaque message et nous répondons.",
     "form.name": "Votre nom",
@@ -94,7 +97,7 @@ const I18N = {
   en: {
     _meta: {
       title: "Heshbon Nefesh — An accounting of the soul, every day",
-      description: "Heshbon Nefesh is a Jewish introspection companion: daily practices tailored to you, guided reviews faithful to tradition, and the Jewish calendar built in. Available on iOS and Android.",
+      description: "Heshbon Nefesh is a Jewish introspection companion: daily practices tailored to you, guided reviews faithful to tradition, and the Jewish calendar built in. Available on Android.",
       legal: "en"
     },
     "nav.demarche": "The practice",
@@ -106,7 +109,7 @@ const I18N = {
     "hero.sub": "Heshbon Nefesh is a Jewish introspection companion: daily practices tailored to you, guided reviews faithful to tradition, and the Jewish calendar giving rhythm to your days.",
     "store.ios.small": "Download on the",
     "store.android.small": "Get it on",
-    "hero.avail": "Available on iOS and Android",
+    "hero.avail": "Available on Android",
     "hero.scroll": "discover",
     "dem.title": "A timeless practice,<br>a daily gesture",
     "dem.lead": "<em>Heshbon nefesh</em> — literally “an accounting of the soul” — is the Jewish tradition of self-examination: taking a moment, every day, to look honestly at where you stand, and to choose one more step. No guilt, no performance: gentle, steady growth.",
@@ -152,6 +155,9 @@ const I18N = {
     "video.sub": "Two minutes of images — the rhythm, the light and the spirit of the app.",
     "video.note": "The film is coming very soon.",
     "video.play": "Play the presentation film",
+    "video.share": "Share the video",
+    "video.shareText": "Discover Heshbon Nefesh — the accounting of the soul, every day.",
+    "video.copied": "Link copied!",
     "c.title": "Write to us",
     "c.p": "A question, an idea, or simply want to say hello? Leave us a note — we read every message and we reply.",
     "form.name": "Your name",
@@ -178,7 +184,7 @@ const I18N = {
   he: {
     _meta: {
       title: "חשבון הנפש — לחזור אל הנשמה, בכל יום",
-      description: "חשבון הנפש הוא מלווה יומי להתבוננות פנימית יהודית: מעשים יומיומיים בהתאמה אישית, סיכומים מודרכים ברוח המסורת, ולוח השנה העברי מובנה. זמין ל‑iOS ולאנדרואיד.",
+      description: "חשבון הנפש הוא מלווה יומי להתבוננות פנימית יהודית: מעשים יומיומיים בהתאמה אישית, סיכומים מודרכים ברוח המסורת, ולוח השנה העברי מובנה. זמין לאנדרואיד.",
       legal: "he"
     },
     "nav.demarche": "הדרך",
@@ -190,7 +196,7 @@ const I18N = {
     "hero.sub": "חשבון הנפש הוא מלווה יומי להתבוננות פנימית יהודית: מעשים יומיומיים בהתאמה אישית, סיכומים מודרכים ברוח המסורת, ולוח השנה העברי שנותן קצב לימים שלכם.",
     "store.ios.small": "להורדה ב‑",
     "store.android.small": "זמין ב‑",
-    "hero.avail": "זמין ל‑iOS ולאנדרואיד",
+    "hero.avail": "זמין לאנדרואיד",
     "hero.scroll": "לגלות",
     "dem.title": "מנהג בן אלפי שנים,<br>מעשה של כל יום",
     "dem.lead": "<em>חשבון הנפש</em> הוא המסורת היהודית של התבוננות פנימית: לעצור לרגע, בכל יום, להביט בכנות היכן אנחנו אוחזים — ולבחור עוד צעד אחד קדימה. בלי אשמה ובלי מרוץ: צמיחה עדינה ומתמדת.",
@@ -236,6 +242,9 @@ const I18N = {
     "video.sub": "שתי דקות של תמונות — הקצב, האור והרוח של האפליקציה.",
     "video.note": "הסרטון בדרך — ממש בקרוב.",
     "video.play": "הפעלת סרטון ההיכרות",
+    "video.share": "שיתוף הסרטון",
+    "video.shareText": "הכירו את חשבון הנפש — חשבון הנפש, יום אחרי יום.",
+    "video.copied": "הקישור הועתק!",
     "c.title": "כתבו לנו",
     "c.p": "שאלה, רעיון, או סתם רצון להגיד שלום? השאירו לנו מילה — אנחנו קוראים כל הודעה ועונים.",
     "form.name": "השם שלכם",

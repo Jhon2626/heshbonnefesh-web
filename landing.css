@@ -716,6 +716,27 @@ h3 {
   margin-left: auto;
   margin-right: auto;
 }
+.video-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: clamp(20px, 3vw, 30px) auto 0;
+  padding: 11px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(140, 106, 34, 0.4);
+  background: transparent;
+  color: #96702a;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.98rem;
+  cursor: pointer;
+  transition: background .2s, color .2s, transform .2s;
+}
+.video-share:hover {
+  background: rgba(140, 106, 34, 0.1);
+  transform: translateY(-1px);
+}
+.video-share svg { flex: none; }
 .video-play {
   position: absolute;
   top: 50%; left: 50%;

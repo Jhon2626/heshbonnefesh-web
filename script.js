@@ -251,6 +251,27 @@ document.documentElement.classList.add("js");
   });
 })();
 
+/* ── Partage de la vidéo ───────────────────────────────────── */
+(function share() {
+  const btn = document.getElementById("videoShare");
+  if (!btn) return;
+  const label = btn.querySelector("span");
+  btn.addEventListener("click", async () => {
+    const T = window.HN_T || ((k) => k);
+    const url = location.origin + location.pathname;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Heshbon Nefesh", text: T("video.shareText"), url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      const prev = label.textContent;
+      label.textContent = T("video.copied");
+      setTimeout(() => { label.textContent = prev; }, 2500);
+    } catch (e) { /* partage annulé par l'utilisateur */ }
+  });
+})();
+
 /* ── Formulaire de contact ─────────────────────────────────── */
 (function contactForm() {
   const form = document.getElementById("contactForm");
