@@ -455,10 +455,22 @@ function openModal(html) { const m = gModal(); m.className = 'modal'; m.innerHTM
 function closeModal() { gi('overlay').style.display = 'none'; const m = gi('modal'); if (m) { m.innerHTML = ''; m.className = 'modal'; } }
 function overlayClick(e) { if (e.target === gi('overlay')) closeModal(); }
 
+// ── Garde d'écriture : une RLS peut FILTRER un update/delete sans erreur
+// (200, 0 ligne). On demande les lignes affectées et on refuse le succès
+// silencieux — sinon le panneau affiche « OK » alors que rien n'a changé.
+const RLS_HINT = '0 ligne affectée — droits admin insuffisants (RLS) ou ligne introuvable. Vérifie profiles.is_admin et les policies d\'écriture (SQL Editor).';
+async function guardedUpdate(builder) {
+  const { data, error } = await builder.select('id');
+  if (error) return { error };
+  if (!data || data.length === 0) return { error: { message: RLS_HINT } };
+  return { error: null };
+}
+
 async function del(table, id, refresh) {
   if (!confirm('Supprimer définitivement ? Cette action est irréversible.')) return;
-  const { error } = await sb.from(table).delete().eq('id', id);
+  const { data, error } = await sb.from(table).delete().eq('id', id).select('id');
   if (error) { toast(error.message, 'err'); return; }
+  if (!data || data.length === 0) { toast(RLS_HINT, 'err'); return; }
   toast('Supprimé avec succès !');
   if (refresh && window[refresh]) window[refresh]();
 }
@@ -1140,7 +1152,7 @@ async function openCatModal(id=null) {
 async function saveCat(id) {
   const d={code:v('c_code').toUpperCase(),nom_fr:v('c_fr'),nom_he:v('c_he')||null,nom_en:v('c_en')||null,icone:v('c_icone')||null,couleur:v('c_col'),ordre:num('c_ordre')||0,actif:cb('c_actif')};
   if(!d.code||!d.nom_fr){toast('Code et nom FR obligatoires','err');return;}
-  const{error}=id?await sb.from('categories').update(d).eq('id',id):await sb.from('categories').insert(d);
+  const{error}=id?await guardedUpdate(sb.from('categories').update(d).eq('id',id)):await sb.from('categories').insert(d);
   if(error){toast(error.message,'err');return;}
   toast(id?'Catégorie mise à jour !':'Catégorie créée !'); closeModal(); renderL1();
 }
@@ -1182,7 +1194,7 @@ async function openSCModal(id=null) {
 async function saveSC(id) {
   const d={code:v('sc_code').toUpperCase(),nom_fr:v('sc_fr'),nom_he:v('sc_he')||null,nom_en:v('sc_en')||null,icone:v('sc_icone')||null,couleur:v('sc_col')||null,ordre:num('sc_ordre')||0,category_id:v('sc_cat')||null};
   if(!d.code||!d.nom_fr){toast('Code et nom FR obligatoires','err');return;}
-  const{error}=id?await sb.from('sous_categories').update(d).eq('id',id):await sb.from('sous_categories').insert(d);
+  const{error}=id?await guardedUpdate(sb.from('sous_categories').update(d).eq('id',id)):await sb.from('sous_categories').insert(d);
   if(error){toast(error.message,'err');return;}
   toast(id?'Mise à jour !':'Créée !'); closeModal(); renderL2();
 }
@@ -1467,7 +1479,7 @@ preferred_time:v('a_preferred_time')||null,
     updated_at:new Date().toISOString()
   };
   if(!d.code||!d.title_fr){toast('Code et titre FR obligatoires','err');return;}
-  const{error}=id?await sb.from('predefined_actions').update(d).eq('id',id):await sb.from('predefined_actions').insert(d);
+  const{error}=id?await guardedUpdate(sb.from('predefined_actions').update(d).eq('id',id)):await sb.from('predefined_actions').insert(d);
   if(error){toast(error.message,'err');return;}
   toast(id?'Action mise à jour !':'Action créée !'); closeModal(); renderL3();
 }
@@ -1505,7 +1517,7 @@ async function openEtapeModal(id=null) {
 async function saveEtape(id) {
   const d={action_id:CN.action?.id||null,titre_fr:v('e_fr'),titre_he:v('e_he')||null,titre_en:v('e_en')||null,ordre:num('e_ordre')||0,is_optional:cb('e_opt')};
   if(!d.titre_fr){toast('Titre FR obligatoire','err');return;}
-  const{error}=id?await sb.from('predefined_sous_actions').update(d).eq('id',id):await sb.from('predefined_sous_actions').insert(d);
+  const{error}=id?await guardedUpdate(sb.from('predefined_sous_actions').update(d).eq('id',id)):await sb.from('predefined_sous_actions').insert(d);
   if(error){toast(error.message,'err');return;}
   toast(id?'Étape mise à jour !':'Étape créée !'); closeModal(); renderL4();
 }
@@ -1602,7 +1614,7 @@ async function openDefiModal(id=null) {
 async function saveDefi(id) {
   const d={titre_fr:v('d_fr'),titre_he:v('d_he')||null,titre_en:v('d_en')||null,description_fr:v('d_dfr')||null,description_he:v('d_dhe')||null,description_en:v('d_den')||null,mida_code:v('d_mida')||null,difficulte:v('d_diff'),is_daily:cb('d_daily'),is_active:cb('d_active')};
   if(!d.titre_fr){toast('Titre FR obligatoire','err');return;}
-  const{error}=id?await sb.from('defis').update(d).eq('id',id):await sb.from('defis').insert(d);
+  const{error}=id?await guardedUpdate(sb.from('defis').update(d).eq('id',id)):await sb.from('defis').insert(d);
   if(error){toast(error.message,'err');return;}
   toast(id?'Défi mis à jour !':'Défi créé !'); closeModal(); renderDefis();
 }
@@ -2642,8 +2654,9 @@ async function toggleTpl(id, actif) {
 
 async function delTpl(id) {
   if (!confirm('Supprimer ce template ?')) return;
-  const { error } = await sb.from('notif_templates').delete().eq('id', id);
+  const { data, error } = await sb.from('notif_templates').delete().eq('id', id).select('id');
   if (error) { toast(error.message, 'err'); return; }
+  if (!data || data.length === 0) { toast(RLS_HINT, 'err'); return; }
   toast('Template supprimé');
   await renderTemplates();
 }
