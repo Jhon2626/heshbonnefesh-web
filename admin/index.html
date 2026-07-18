@@ -517,7 +517,8 @@ async function del(table, id, refresh) {
 
 // ── Pastilles génériques (type / niveau / fréquence) ──
 const bType = t => { const m={basic:'b-blue',repetitive:'b-gold',engagement:'b-green'}; const l={basic:'Basique',repetitive:'Répétitive',engagement:'Engagement'}; return `<span class="badge ${m[t]||'b-gray'}">${l[t]||t||'-'}</span>`; };
-const bLevel = l => { const m={essentiel:'b-green',approfondi:'b-blue',complet:'b-gold'}; const n={essentiel:'Essentiel',approfondi:'Approfondi',complet:'Complet'}; return `<span class="badge ${m[l]||'b-gray'}">${n[l]||l||'-'}</span>`; };
+// 2 paliers : essentiel → « Premiers pas » ; approfondi/complet → « Avancé »
+const bLevel = l => { const start = l==='essentiel'; return `<span class="badge ${start?'b-green':'b-gold'}">${start?'🌿 Premiers pas':'⭐ Avancé'}</span>`; };
 const bFreq = f => { const l={daily:'Quotidien',weekly:'Hebdo',monthly:'Mensuel',flexible:'Flexible',ponctual:'Ponctuel'}; return `<span class="badge b-gray">${l[f]||f||'-'}</span>`; };
 const bDiff = d => { const m={facile:'b-green',moyen:'b-gold',difficile:'b-red'}; return `<span class="badge ${m[d]||'b-gray'}">${d||'-'}</span>`; };
 
@@ -1268,11 +1269,10 @@ async function openActModal(id=null) {
         <div><label class="fl">Code unique *</label><input id="a_code" class="inp" value="${h(it.code)}" placeholder="mode_ani"></div>
         <div>
           <label class="fl">Niveau minimum requis *</label>
-          <p style="font-size:11px;color:var(--text3);margin-bottom:6px;">L'action sera visible à partir de ce niveau</p>
+          <p style="font-size:11px;color:var(--text3);margin-bottom:6px;">Niveau minimum de l'utilisateur pour voir l'action</p>
           <select id="a_level" class="inp">
-            <option value="essentiel" ${it.level==='essentiel'?'selected':''}>🌿 Essentiel — tous les niveaux</option>
-            <option value="approfondi" ${it.level==='approfondi'?'selected':''}>📚 Approfondi et Complet</option>
-            <option value="complet" ${it.level==='complet'?'selected':''}>⭐ Complet uniquement</option>
+            <option value="essentiel" ${it.level==='essentiel'?'selected':''}>🌿 Premiers pas — visible par tous</option>
+            <option value="complet" ${(it.level==='complet'||it.level==='approfondi')?'selected':''}>⭐ Avancé — pratiquants avancés</option>
           </select>
         </div>
       </div>
@@ -1987,7 +1987,7 @@ async function showUserDetails(uid) {
           ${row('Genre', h(u.genre) || '<span style="color:var(--text3);">non renseigné</span>')}
           ${row('Statut marital', h(u.statut_marital) || '<span style="color:var(--text3);">non renseigné</span>')}
           ${row('Enfants', u.has_children === true ? `Oui (${h(u.nb_enfants || 0)})` : u.has_children === false ? 'Non' : '<span style="color:var(--text3);">non renseigné</span>')}
-          ${row('Niveau de pratique', h(u.niveau || 'essentiel'))}
+          ${row('Niveau de pratique', (u.niveau||'essentiel')==='essentiel' ? '🌿 Premiers pas' : '⭐ Avancé')}
         `)}
 
         ${section('📍 Localisation', `
