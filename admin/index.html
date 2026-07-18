@@ -467,6 +467,46 @@ async function guardedUpdate(builder) {
 }
 
 async function del(table, id, refresh) {
+  // ── Suppression intelligente pour predefined_actions & defis ──
+  // Ces deux tables sont référencées par des données utilisateur :
+  //  • user_actions.predefined_action_id (ON DELETE SET NULL) + CHECK
+  //    « is_custom=false ⇒ predefined_action_id NOT NULL » : supprimer une
+  //    action ADOPTÉE fait échouer tout le DELETE (violation de contrainte).
+  //  • user_defis.defi_id (ON DELETE CASCADE) : supprimer un défi ACCEPTÉ
+  //    efface silencieusement l'historique des utilisateurs.
+  // → si des utilisateurs l'utilisent, on propose de DÉSACTIVER (actif/is_active
+  //   = false) : invisible pour les nouveaux (le catalogue filtre actif=true),
+  //   mais conservé pour ceux qui l'ont déjà (le dashboard ne filtre pas).
+  if (table === 'predefined_actions' || table === 'defis') {
+    const isAction = table === 'predefined_actions';
+    const usageTable = isAction ? 'user_actions' : 'user_defis';
+    const usageCol   = isAction ? 'predefined_action_id' : 'defi_id';
+    const activeCol  = isAction ? 'actif' : 'is_active';
+    const label      = isAction ? 'pratique' : 'défi';
+
+    const { count, error: cErr } = await sb.from(usageTable)
+      .select('*', { count: 'exact', head: true }).eq(usageCol, id);
+    if (cErr) { toast('Vérif. usage impossible : ' + cErr.message, 'err'); return; }
+
+    if (count && count > 0) {
+      const ok = confirm(
+        `⚠️ ${count} utilisateur(s) utilisent ce/cette ${label}.\n\n`
+        + `La supprimer effacerait leurs données (progrès, séries, historique).\n\n`
+        + `→ OK : la DÉSACTIVER (recommandé — invisible pour les nouveaux, données conservées)\n`
+        + `→ Annuler : ne rien faire`
+      );
+      if (!ok) return;
+      const { data, error } = await sb.from(table)
+        .update({ [activeCol]: false }).eq('id', id).select('id');
+      if (error) { toast(error.message, 'err'); return; }
+      if (!data || data.length === 0) { toast(RLS_HINT, 'err'); return; }
+      toast(`${isAction ? 'Pratique désactivée' : 'Défi désactivé'} (données utilisateurs conservées)`);
+      if (refresh && window[refresh]) window[refresh]();
+      return;
+    }
+    // Personne ne l'utilise → suppression réelle possible sans risque
+  }
+
   if (!confirm('Supprimer définitivement ? Cette action est irréversible.')) return;
   const { data, error } = await sb.from(table).delete().eq('id', id).select('id');
   if (error) { toast(error.message, 'err'); return; }
